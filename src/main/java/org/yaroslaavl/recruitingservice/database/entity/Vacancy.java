@@ -7,10 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.yaroslaavl.recruitingservice.database.entity.enums.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -29,13 +31,13 @@ public class Vacancy {
     private UUID companyId;
 
     @Column(name = "recruiter_id", nullable = false)
-    private UUID recruiterId;
+    private String recruiterId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false, length = 100)
     private String title;
 
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -63,7 +65,7 @@ public class Vacancy {
     @Column(name = "workload", length = 50)
     private Workload workload;
 
-    @Column(length = 255)
+    @Column(name = "location")
     private String location;
 
     @Column(name = "salary_from")
@@ -76,9 +78,17 @@ public class Vacancy {
     @Column(length = 50, nullable = false)
     private VacancyStatus status = VacancyStatus.DISABLED;
 
-    @DefaultValue( "true")
     @Column(name = "is_waiting_for_approval", nullable = false)
     private boolean isWaitingForApproval;
+
+    @OneToMany(mappedBy = "vacancy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReportSystem> reports;
+
+    @Formula("(select count(*) from recruiting_data.report_system rc where rc.vacancy_id = id and rc.status != 'RESOLVED')")
+    private Long notResolvedReports;
+
+    @Column(name = "last_status_changed_at", nullable = false)
+    private LocalDateTime lastStatusChangeAt;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

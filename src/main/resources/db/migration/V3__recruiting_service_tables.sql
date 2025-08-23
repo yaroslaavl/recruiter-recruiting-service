@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS recruiting_data.vacancy (
                                                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                                                        company_id UUID NOT NULL,
-                                                       recruiter_id UUID NOT NULL,
+                                                       recruiter_id VARCHAR(250) NOT NULL,
                                                        category_id UUID NOT NULL,
                                                        title VARCHAR(255) NOT NULL,
                                                        description TEXT NOT NULL,
@@ -16,13 +16,14 @@ CREATE TABLE IF NOT EXISTS recruiting_data.vacancy (
                                                        salary_to INT,
                                                        status VARCHAR(50) NOT NULL DEFAULT 'DISABLED',
                                                        is_waiting_for_approval BOOLEAN NOT NULL DEFAULT FALSE,
+                                                       last_status_changed_at TIMESTAMP NOT NULL DEFAULT NOW(),
                                                        created_at TIMESTAMP          NOT NULL DEFAULT NOW(),
                                                        updated_at TIMESTAMP          NOT NULL DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS recruiting_data.application (
                                                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                                                        vacancy_id UUID NOT NULL REFERENCES recruiting_data.vacancy(id) ON DELETE CASCADE,
-                                                       candidate_id UUID NOT NULL,
+                                                       candidate_id VARCHAR(250) NOT NULL,
                                                        cv_id UUID NOT NULL,
                                                        status VARCHAR(50) NOT NULL DEFAULT 'NEW',
                                                        cover_letter TEXT,

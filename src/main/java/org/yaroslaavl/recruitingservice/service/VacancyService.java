@@ -1,12 +1,8 @@
 package org.yaroslaavl.recruitingservice.service;
 
+import org.yaroslaavl.recruitingservice.dto.request.VacancyRequestDto;
+
 public interface VacancyService {
 
-    void createVacancy();
-    void updateVacancy();
-    void updateVacancyStatus();
-    void findFilteredVacancies();
-    void findVacancy();
-    void reportVacancy();
-    void deleteVacancy();
+    void createVacancy(VacancyRequestDto vacancyRequestDto);
 }

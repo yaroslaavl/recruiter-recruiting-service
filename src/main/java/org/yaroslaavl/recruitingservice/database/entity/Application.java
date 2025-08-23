@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.yaroslaavl.recruitingservice.database.entity.enums.ApplicationStatus;
+import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,14 +27,14 @@ public class Application {
     private UUID vacancyId;
 
     @Column(name = "candidate_id", nullable = false)
-    private UUID candidateId;
+    private String candidateId;
 
     @Column(name = "cv_id", nullable = false)
     private UUID cvId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private ApplicationStatus status;
+    private RecruitingSystemStatus status;
 
     @Column(name = "cover_letter")
     private String coverLetter;
