@@ -23,7 +23,7 @@ public class VacancyScheduler {
     private Long maxReportCount;
 
     @Value("${vacancy.time_expiration}")
-    private Duration vacancyDuration;
+    private Duration vacancyTimeExpiration;
 
     private final VacancyRepository vacancyRepository;
 
@@ -85,7 +85,7 @@ public class VacancyScheduler {
                 log.info("Vacancy with id '{}' is now disabled", vacancy.getId());
             }
 
-            if (vacancy.getLastStatusChangeAt().plusMinutes(vacancyDuration.toMinutes()).isBefore(LocalDateTime.now())) {
+            if (vacancy.getLastStatusChangeAt().plusMinutes(vacancyTimeExpiration.toMinutes()).isBefore(LocalDateTime.now())) {
                 vacancy.setStatus(VacancyStatus.TIME_EXPIRED);
                 vacancy.setWaitingForApproval(Boolean.TRUE);
 
