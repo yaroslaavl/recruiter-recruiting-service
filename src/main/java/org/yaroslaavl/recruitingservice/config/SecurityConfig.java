@@ -1,0 +1,45 @@
+package org.yaroslaavl.recruitingservice.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.web.SecurityFilterChain;
+import org.yaroslaavl.recruitingservice.config.converter.KeyCloakAuthenticationRoleConverter;
+
+import java.util.Collection;
+
+@Configuration
+@EnableScheduling
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwtConfigurer -> jwtConfigurer
+                                .jwtAuthenticationConverter(jwtToken -> {
+                                    Collection<GrantedAuthority> authorities = new KeyCloakAuthenticationRoleConverter().convert(jwtToken);
+                                    return new JwtAuthenticationToken(jwtToken, authorities);
+                                })
+                        )
+                );
+
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(
+                        request -> request
+                                .requestMatchers(
+                                        "/error",
+                                        "/actuator/health").permitAll()
+                                .requestMatchers(
+                                        "/api/v1/categories/filtered",
+                                        "/api/v1/vacancies/").hasRole("VERIFIED_RECRUITER")
+                );
+
+        return http.build();
+    }
+}
