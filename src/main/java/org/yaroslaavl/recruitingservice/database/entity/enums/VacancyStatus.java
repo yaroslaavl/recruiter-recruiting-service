@@ -5,4 +5,5 @@ public enum VacancyStatus {
     DISABLED,
     TEMP_DISABLED,
     TIME_EXPIRED,
+    ARCHIVED,
 }

@@ -74,6 +74,9 @@ public class VacancyScheduler {
         }
 
         List<Vacancy> changedVacancies = new ArrayList<>();
+        boolean isExpired = Boolean.FALSE;
+        boolean isChanged = Boolean.FALSE;
+
         for (Vacancy vacancy : allActiveVacancies) {
             log.info("Vacancy with id '{}' is active", vacancy.getId());
 
@@ -82,6 +85,8 @@ public class VacancyScheduler {
                 vacancy.setWaitingForApproval(Boolean.TRUE);
 
                 changedVacancies.add(vacancy);
+
+                isChanged = Boolean.TRUE;
                 log.info("Vacancy with id '{}' is now disabled", vacancy.getId());
             }
 
@@ -90,10 +95,17 @@ public class VacancyScheduler {
                 vacancy.setWaitingForApproval(Boolean.TRUE);
 
                 changedVacancies.add(vacancy);
+
+                isChanged = Boolean.TRUE;
+                isExpired = Boolean.TRUE;
                 log.info("Vacancy with id '{}' expired", vacancy.getId());
             }
 
-            //send notification to Recruiter
+            if (isChanged && isExpired) {
+                //send notification to Recruiter
+            } else if (isChanged) {
+                //send notification to Recruiter
+            }
         }
 
         if (!changedVacancies.isEmpty()) {

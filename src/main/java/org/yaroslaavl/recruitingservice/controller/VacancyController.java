@@ -17,7 +17,7 @@ public class VacancyController {
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> createVacancy(@RequestBody VacancyRequestDto vacancyRequestDto) {
-        vacancyService.createVacancy(vacancyRequestDto);
+        vacancyService.create(vacancyRequestDto);
         return ResponseEntity.noContent().build();
     }
 }

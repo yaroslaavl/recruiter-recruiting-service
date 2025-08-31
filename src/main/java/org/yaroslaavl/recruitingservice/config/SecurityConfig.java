@@ -38,6 +38,8 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/api/v1/categories/filtered",
                                         "/api/v1/vacancies/").hasRole("VERIFIED_RECRUITER")
+                                .requestMatchers(
+                                        "/api/v1/report-system/send").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
                 );
 
         return http.build();
