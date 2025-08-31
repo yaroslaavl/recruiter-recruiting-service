@@ -23,8 +23,9 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "vacancy_id", nullable = false)
-    private UUID vacancyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vacancy_id", nullable = false)
+    private Vacancy vacancy;
 
     @Column(name = "candidate_id", nullable = false)
     private String candidateId;

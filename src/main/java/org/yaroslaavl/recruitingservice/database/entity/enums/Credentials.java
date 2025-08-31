@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum Credentials {
-    TOKEN(""),
     SUB("sub"),
     EMAIL("email");
 

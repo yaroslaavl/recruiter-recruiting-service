@@ -1,7 +1,10 @@
 package org.yaroslaavl.recruitingservice.database.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 import org.yaroslaavl.recruitingservice.database.entity.enums.VacancyReportReason;
@@ -11,6 +14,9 @@ import java.util.UUID;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "report_system", schema = "recruiting_data")
 public class ReportSystem {
 
@@ -23,7 +29,7 @@ public class ReportSystem {
     private Vacancy vacancy;
 
     @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    private String userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reason", nullable = false)

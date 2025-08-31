@@ -28,8 +28,8 @@ public class ApplicationHistory {
     @Column(name = "new_status", nullable = false)
     private RecruitingSystemStatus newStatus;
 
-    @Column(name = "changed_by", nullable = false)
-    private UUID changedBy;
+    @Column(name = "changed_by")
+    private String changedBy;
 
     @Column(name = "changed_at", nullable = false,
             columnDefinition = "TIMESTAMP DEFAULT NOW()")
