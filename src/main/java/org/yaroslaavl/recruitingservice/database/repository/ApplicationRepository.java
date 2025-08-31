@@ -1,0 +1,25 @@
+package org.yaroslaavl.recruitingservice.database.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import org.yaroslaavl.recruitingservice.database.entity.Application;
+import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
+
+import java.util.Optional;
+import java.util.UUID;
+
+@Repository
+public interface ApplicationRepository extends JpaRepository<Application, UUID> {
+
+    Optional<Application> findByVacancyIdAndCandidateId(UUID vacancyId, String cvId);
+
+    @Query("""
+    SELECT app FROM Application app
+    WHERE app.vacancy.id = :vacancyId
+    AND (:status IS NULL OR app.status = :status)
+    """)
+    Page<Application> findApplicationsByVacancyIdAndStatus(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
+}
