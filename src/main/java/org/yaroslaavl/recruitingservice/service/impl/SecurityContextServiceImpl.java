@@ -22,9 +22,6 @@ public class SecurityContextServiceImpl implements SecurityContextService {
         var token = jwt.getToken();
 
         switch (credentials) {
-            case TOKEN -> {
-                return token.getTokenValue();
-            }
             case SUB, EMAIL -> {
                 return token.getClaimAsString(credentials.getCredential());
             }
