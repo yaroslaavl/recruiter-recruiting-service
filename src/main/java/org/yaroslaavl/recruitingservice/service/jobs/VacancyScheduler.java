@@ -27,6 +27,23 @@ public class VacancyScheduler {
 
     private final VacancyRepository vacancyRepository;
 
+    /**
+     * Checks and updates the activation status of vacancies that are not currently active.
+     * This method runs at a fixed interval of 60 seconds and performs the following steps:
+     *
+     * 1. Retrieves a list of all non-active vacancies from the vacancy repository.
+     * 2. Logs the retrieved vacancies and their current statuses.
+     * 3. Skips vacancies with unresolved report counts exceeding the allowed maximum.
+     * 4. For vacancies that have been in their current status for more than 15 minutes:
+     *    a. Updates their status to "ENABLED".
+     *    b. Marks them as no longer waiting for approval.
+     *    c. Adds them to a list of changed vacancies.
+     *    d. Logs the change of their status.
+     * 5. Saves any updated vacancies back to the repository.
+     *
+     * The method ensures that only eligible vacancies are activated and notifies
+     * recruiters for vacancies whose status has been updated.
+     */
     @Scheduled(fixedDelay = 60000)
     public void checkVacancyActivationStatus() {
         log.info("Checking vacancy status");
@@ -62,6 +79,22 @@ public class VacancyScheduler {
         }
     }
 
+    /**
+     * This method periodically checks the status and expiration time of active vacancies.
+     * It runs at a fixed interval of 60 seconds and performs the following operations:
+     *
+     * 1. Retrieves all active vacancies from the repository. If no active vacancies are found, it logs this information and exits.
+     * 2. Iterates through each active vacancy and performs the following checks:
+     *    a. If the number of unresolved reports for a vacancy exceeds the maximum allowed report count,
+     *       the vacancy status is updated to `TEMP_DISABLED`, it is marked as waiting for approval,
+     *       and added to a list of changed vacancies.
+     *    b. If the current time exceeds the allocated expiration time for a vacancy since its last status change,
+     *       the vacancy status is updated to `TIME_EXPIRED`, it is marked as waiting for approval,
+     *       and added to the list of changed vacancies.
+     * 3. Logs the ID of each processed vacancy along with its updated status if changes occurred.
+     * 4. If vacancies were changed, the changes are persisted to the repository.
+     * 5. Notifications to recruiters may be triggered for vacancies whose status has been updated.
+     */
     @Scheduled(fixedDelay = 60000)
     public void checkVacancyReportsStatusAndExpirationTime() {
         log.info("Checking vacancy reports status");
