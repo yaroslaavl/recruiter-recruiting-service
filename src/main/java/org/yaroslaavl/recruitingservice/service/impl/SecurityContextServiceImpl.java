@@ -12,6 +12,18 @@ import org.yaroslaavl.recruitingservice.service.SecurityContextService;
 @Service
 public class SecurityContextServiceImpl implements SecurityContextService {
 
+    /**
+     * Retrieves the security context information based on the provided credential type
+     * from the current authentication token. This method extracts specific claims
+     * associated with the credential type from a JWT token if present.
+     *
+     * @param credentials the type of credential to retrieve from the security context.
+     *                     This can either be {@code Credentials.SUB} or {@code Credentials.EMAIL}.
+     *                     Other types will result in an exception.
+     * @return the value of the claim associated with the specified credential type if available,
+     *         or {@code null} if the authentication is not a valid JWT authentication token.
+     * @throws IllegalArgumentException if the provided credential type is unsupported.
+     */
     @Override
     public String getSecurityContext(Credentials credentials) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

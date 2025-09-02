@@ -57,6 +57,16 @@ public class ApplicationServiceImpl implements ApplicationService {
                     RecruitingSystemStatus.NO_MORE_INTERESTS)
     );
 
+    /**
+     * Applies for a vacancy based on the provided vacancy application request.
+     * The method validates the candidate's approval status, retrieves the CV for the recruiter,
+     * checks for any existing application for the given vacancy, and either updates the application
+     * or creates a new one based on the current status. Throws exceptions if the candidate is not
+     * approved, the CV is not available, or if there are blocking conditions due to existing applications.
+     *
+     * @param vacancyApplicationRequestDto the data transfer object containing information about the vacancy
+     *                                     application, including the vacancy ID, CV ID, and cover letter
+     */
     @Override
     @Transactional
     public void applyVacancy(VacancyApplicationRequestDto vacancyApplicationRequestDto) {
@@ -130,6 +140,17 @@ public class ApplicationServiceImpl implements ApplicationService {
         //sendNotification
     }
 
+    /**
+     * Retrieves a paginated and filtered list of application responses for a given vacancy and status.
+     *
+     * @param vacancyId the unique identifier of the vacancy for which applications are being retrieved
+     * @param status the status filter to apply when retrieving the applications
+     * @param pageable the pagination and sorting information
+     * @return a page of application response DTOs that match the given vacancyId and status
+     * @throws EntityNotFoundException if no vacancy with the specified vacancyId exists
+     * @throws RecruiterNotBelongToCompanyOrVacancyException if the authenticated recruiter does not
+     *         have access to the specified vacancy
+     */
     @Override
     public Page<ApplicationResponseDto> findFilteredApplications(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable) {
         String recruiterKeyId = securityContextService.getSecurityContext(Credentials.SUB);
@@ -146,6 +167,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationsByVacancyIdAndStatus.map(applicationMapper::toApplicationDto);
     }
 
+    /**
+     * Retrieves the details of an application by its unique identifier.
+     * If the application status is NEW, it updates the status to VIEWED,
+     * logs the change in application history, and persists the updated application.
+     *
+     * @param applicationId the unique identifier of the application to be retrieved
+     * @return an ApplicationDetailsResponseDto containing the details of the application
+     *         mapped from the application entity
+     */
     @Override
     @Transactional
     public ApplicationDetailsResponseDto getApplicationDetails(UUID applicationId) {
@@ -161,6 +191,17 @@ public class ApplicationServiceImpl implements ApplicationService {
         return applicationMapper.toApplicationDetailsDto(application);
     }
 
+    /**
+     * Changes the status of an application to the specified new status. Validates the current state of the application
+     * and ensures that the status transition is allowed based on predefined rules. Additionally, updates the associated
+     * vacancy status and history if applicable and persists the changes.
+     *
+     * @param applicationId the unique identifier of the application whose status is to be changed
+     * @param newStatus the new status to which the application is to be transitioned
+     * @throws ViewApplicationException if the current application status is NEW and the recruiter is not allowed
+     *         to change the status
+     * @throws IllegalStateException if the transition from the current status to the specified new status is not allowed
+     */
     @Override
     @Transactional
     public void changeApplicationStatus(UUID applicationId, RecruitingSystemStatus newStatus) {
@@ -182,9 +223,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (newStatus == RecruitingSystemStatus.ACCEPTED) {
             application.getVacancy().setStatus(VacancyStatus.ARCHIVED);
             vacancyRepository.save(application.getVacancy());
-            //send notification to recruiter and candidate
         }
 
+        //send notification to candidate and recruiter if ACCEPTED
         //send notification to candidate
         applicationRepository.save(application);
     }

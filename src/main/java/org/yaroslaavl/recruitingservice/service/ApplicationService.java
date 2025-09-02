@@ -18,4 +18,6 @@ public interface ApplicationService {
     ApplicationDetailsResponseDto getApplicationDetails(UUID applicationId);
 
     void changeApplicationStatus(UUID applicationId, RecruitingSystemStatus newStatus);
+
+
 }

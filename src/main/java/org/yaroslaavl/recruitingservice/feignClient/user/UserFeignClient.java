@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface UserFeignClient {
 
     @GetMapping("/user/belongs")
-    Boolean isRecruiterBelongToCompany(@RequestParam("recruiterKeyId") String recruiterKeyId,
+    boolean isRecruiterBelongToCompany(@RequestParam("recruiterKeyId") String recruiterKeyId,
                                        @RequestParam("companyId") UUID companyId);
 
     @GetMapping("/user/isApproved")
