@@ -21,6 +21,14 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
+    /**
+     * Retrieves a list of categories filtered by their names.
+     * The filtering is case-insensitive and supports partial matches.
+     * If no search name is provided, all categories are returned.
+     *
+     * @param searchName the name or partial name to filter the categories by; can be null to indicate no filtering
+     * @return a list of {@code CategoryResponseDto} containing the filtered categories' details
+     */
     @Override
     public List<CategoryResponseDto> findFilteredCategories(String searchName) {
         log.info("Filtering categories by name: {}", searchName);
