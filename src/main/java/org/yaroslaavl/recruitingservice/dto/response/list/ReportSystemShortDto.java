@@ -1,5 +1,6 @@
-package org.yaroslaavl.recruitingservice.dto.response;
+package org.yaroslaavl.recruitingservice.dto.response.list;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 
@@ -8,7 +9,7 @@ import java.util.UUID;
 
 public record ReportSystemShortDto(
         @NotNull UUID id,
-        @NotNull String userId,
+        @NotBlank String displayName,
         @NotNull RecruitingSystemStatus status,
         @NotNull LocalDateTime reportedAt
 ) { }
