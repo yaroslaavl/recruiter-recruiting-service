@@ -9,10 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 public record ApplicationDetailsResponseDto(
-        @NotNull UUID id,
         @NotNull UUID vacancyId,
+        @NotNull UUID cvId,
+        @NotBlank String vacancyTitle,
         @NotBlank String candidateId,
+        @NotBlank String recruiterId,
         @NotNull RecruitingSystemStatus status,
+        String location,
+        Integer salaryFrom,
+        Integer salaryTo,
         String coverLetter,
         @NotNull LocalDateTime appliedAt,
         @NotNull List<ApplicationHistoryResponseDto> history
