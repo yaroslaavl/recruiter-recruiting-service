@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,6 +21,7 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     SELECT app FROM Application app
     WHERE app.vacancy.id = :vacancyId
     AND (:status IS NULL OR app.status = :status)
+    AND (:userFilteredIds IS NULL OR app.candidateId IN (:userFilteredIds))
     """)
-    Page<Application> findApplicationsByVacancyIdAndStatus(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
+    Page<Application> findApplicationsByVacancyIdAndStatus(UUID vacancyId, RecruitingSystemStatus status, List<String> userFilteredIds, Pageable pageable);
 }
