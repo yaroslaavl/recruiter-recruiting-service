@@ -2,6 +2,7 @@ package org.yaroslaavl.recruitingservice.service.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,19 +19,18 @@ import org.yaroslaavl.recruitingservice.database.repository.ApplicationRepositor
 import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyApplicationRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseDto;
-import org.yaroslaavl.recruitingservice.dto.response.ApplicationResponseDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.exception.*;
 import org.yaroslaavl.recruitingservice.feignClient.cv.CvFeignClient;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
+import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
 import org.yaroslaavl.recruitingservice.mapper.ApplicationMapper;
 import org.yaroslaavl.recruitingservice.service.ApplicationService;
 import org.yaroslaavl.recruitingservice.service.SecurityContextService;
 
 import java.time.LocalDateTime;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -58,9 +58,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     );
 
     /**
-     * Applies for a vacancy based on the provided vacancy application request.
+     * Applies for a recruiting based on the provided recruiting application request.
      * The method validates the candidate's approval status, retrieves the CV for the recruiter,
-     * checks for any existing application for the given vacancy, and either updates the application
+     * checks for any existing application for the given recruiting, and either updates the application
      * or creates a new one based on the current status. Throws exceptions if the candidate is not
      * approved, the CV is not available, or if there are blocking conditions due to existing applications.
      *
@@ -152,7 +152,13 @@ public class ApplicationServiceImpl implements ApplicationService {
      *         have access to the specified vacancy
      */
     @Override
-    public Page<ApplicationResponseDto> findFilteredApplications(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable) {
+    public PageShortDto<ApplicationShortDto> getFilteredApplications(UUID vacancyId,
+                                                                     RecruitingSystemStatus status,
+                                                                     String salary,
+                                                                     String workMode,
+                                                                     Integer availableHoursPerWeek,
+                                                                     String availableFrom,
+                                                                     Pageable pageable) {
         String recruiterKeyId = securityContextService.getSecurityContext(Credentials.SUB);
 
         Vacancy vacancy = vacancyRepository.findById(vacancyId).orElseThrow(
@@ -162,9 +168,24 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new RecruiterNotBelongToCompanyOrVacancyException("Recruiter is not belong to vacancy");
         }
 
-        Page<Application> applicationsByVacancyIdAndStatus = applicationRepository.findApplicationsByVacancyIdAndStatus(vacancyId, status, pageable);
+        Map<String, UserFeignDto> filteredCandidates = Optional.ofNullable(
+                        userFeignClient.getFilteredCandidates(salary, workMode, availableHoursPerWeek, availableFrom))
+                .orElse(Collections.emptyMap());
 
-        return applicationsByVacancyIdAndStatus.map(applicationMapper::toApplicationDto);
+        List<@NotBlank String> userFilteredIds = filteredCandidates.keySet().stream().toList();
+
+        Page<Application> applicationsByVacancyIdAndStatus = applicationRepository.findApplicationsByVacancyIdAndStatus(vacancyId, status, userFilteredIds, pageable);
+
+        if (applicationsByVacancyIdAndStatus.isEmpty()) {
+            log.info("No applications found for recruiting with id: {}", vacancyId);
+            return new PageShortDto<>(Collections.emptyList(), 0, 0, 0, 0);
+        }
+        return new PageShortDto<>(
+                applicationMapper.toShortDto(applicationsByVacancyIdAndStatus.getContent(), filteredCandidates),
+                applicationsByVacancyIdAndStatus.getTotalElements(),
+                applicationsByVacancyIdAndStatus.getTotalPages(),
+                applicationsByVacancyIdAndStatus.getNumber(),
+                applicationsByVacancyIdAndStatus.getSize());
     }
 
     /**
@@ -181,12 +202,22 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationDetailsResponseDto getApplicationDetails(UUID applicationId) {
         Application application = checkAndGetApplicationBack(applicationId);
 
+        String userId = securityContextService.
+                getSecurityContext(Credentials.SUB);
+
+        if (application.getCandidateId().equals(userId)) {
+            return applicationMapper.toApplicationDetailsDto(application);
+        }
+
+        if (!application.getVacancy().getRecruiterId().equals(userId)) {
+            throw new ApplicationAccessException("User does not have access to application");
+        }
+
         if (application.getStatus() == RecruitingSystemStatus.NEW) {
             application.setStatus(RecruitingSystemStatus.VIEWED);
 
             applicationHistoryChanger(application, RecruitingSystemStatus.VIEWED, false);
             applicationRepository.save(application);
-            //send notification to candidate
         }
         return applicationMapper.toApplicationDetailsDto(application);
     }

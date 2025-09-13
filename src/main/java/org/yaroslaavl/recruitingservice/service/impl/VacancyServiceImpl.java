@@ -4,23 +4,30 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.yaroslaavl.recruitingservice.database.entity.enums.Credentials;
-import org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus;
+import org.yaroslaavl.recruitingservice.database.entity.enums.*;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyUpdateRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.VacancyResponseDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.VacancyShortDto;
 import org.yaroslaavl.recruitingservice.exception.CreationFailedException;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
 import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyRequestDto;
 import org.yaroslaavl.recruitingservice.exception.RecruiterNotBelongToCompanyOrVacancyException;
+import org.yaroslaavl.recruitingservice.feignClient.dto.CompanyPreviewFeignDto;
 import org.yaroslaavl.recruitingservice.mapper.VacancyMapper;
 import org.yaroslaavl.recruitingservice.service.SecurityContextService;
 import org.yaroslaavl.recruitingservice.service.VacancyService;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.LocalTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -119,6 +126,87 @@ public class VacancyServiceImpl implements VacancyService {
                 () -> new EntityNotFoundException("Vacancy with id: " + vacancyId + " not found"));
 
         return vacancyMapper.toDto(vacancy);
+    }
+
+    /**
+     * Retrieves a filtered list of vacancies based on specified criteria.
+     *
+     * @param textSearch   the text to search within recruiting titles or category
+     * @param contractType the type of contract (e.g., FULL_TIME, PART_TIME) to filter vacancies by
+     * @param workMode     the mode of work (e.g., REMOTE, ONSITE, HYBRID) to filter vacancies by
+     * @param positionLevel the position level (e.g., JUNIOR, MID, SENIOR) to filter vacancies by
+     * @param workload     the workload (e.g., FULL, PART_TIME) to filter vacancies by
+     * @param salaryFrom   the minimum salary threshold for filtering vacancies
+     * @param salaryTo     the maximum salary threshold for filtering vacancies
+     * @param pageable     the pagination information for retrieving paginated results
+     *
+     * @return a paginated DTO containing a list of filtered vacancies, each represented by a VacancyShortDto
+     */
+    @Override
+    public PageShortDto<VacancyShortDto> getFilteredVacancies(String textSearch, ContractType contractType, WorkMode workMode, PositionLevel positionLevel, Workload workload, Integer salaryFrom, Integer salaryTo, LocalDateTime uploadAt, Pageable pageable) {
+        log.info("Getting vacancies by filtered textSearch: {}, contractType: {}, workMode: {}, position: {}, workload: {}",
+                textSearch, contractType, workMode, positionLevel, workload);
+
+        LocalDateTime selectedDateStart;
+        LocalDateTime selectedDateEnd;
+
+        if (uploadAt != null) {
+            selectedDateStart = uploadAt.toLocalDate().atStartOfDay();
+            selectedDateEnd = selectedDateStart.toLocalDate().atTime(LocalTime.MAX);
+        } else {
+            selectedDateStart = LocalDate.of(2025, 1, 1).atStartOfDay();
+            selectedDateEnd = LocalDateTime.now();
+        }
+
+        Page<Vacancy> filteredVacancies = vacancyRepository.getFilteredVacancies(textSearch, contractType, workMode, positionLevel, workload, salaryFrom, salaryTo, selectedDateStart, selectedDateEnd, pageable);
+
+        if (filteredVacancies.isEmpty()) {
+            log.info("No vacancies found");
+            return new PageShortDto<>(Collections.emptyList(), 0, 0, 0, 0);
+        }
+
+        Map<UUID, CompanyPreviewFeignDto> companyPreview = userFeignClient.previewInfo(filteredVacancies.getContent()
+                .stream()
+                .map(Vacancy::getCompanyId)
+                .collect(Collectors.toSet()));
+
+        return new PageShortDto<>(
+                vacancyMapper.toShortDto(filteredVacancies.getContent(), companyPreview),
+                filteredVacancies.getTotalElements(),
+                filteredVacancies.getTotalPages(),
+                filteredVacancies.getNumber(),
+                filteredVacancies.getSize());
+    }
+
+    @Override
+    public PageShortDto<VacancyShortDto> getCompanyVacancies(UUID companyId, Pageable pageable) {
+        log.info("Getting vacancies by company with id: {}", companyId);
+
+        Page<Vacancy> companyVacancies = vacancyRepository.getCompanyVacancies(companyId, pageable);
+
+        if (companyVacancies.isEmpty()) {
+            log.info("No vacancies found by company with id: {}", companyId);
+            return new PageShortDto<>(Collections.emptyList(), 0, 0, 0, 0);
+        }
+
+        Map<UUID, CompanyPreviewFeignDto> previewInfo = userFeignClient.previewInfo(Set.of(companyId));
+
+        return new PageShortDto<>(
+                vacancyMapper.toShortDto(companyVacancies.getContent(), previewInfo),
+                companyVacancies.getTotalElements(),
+                companyVacancies.getTotalPages(),
+                companyVacancies.getNumber(),
+                companyVacancies.getSize());
+    }
+
+    @Override
+    public Map<UUID, Long> countCompanyVacancies(Set<UUID> companyIds) {
+        List<Vacancy> companyVacancies = vacancyRepository.getCompaniesVacancy(companyIds);
+
+        Map<UUID, Long> result = companyVacancies.stream().collect(Collectors.groupingBy(Vacancy::getCompanyId, Collectors.counting()));
+        companyIds.forEach(companyId -> result.putIfAbsent(companyId, 0L));
+
+        return result;
     }
 
     /**
