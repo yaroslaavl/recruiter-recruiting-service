@@ -2,6 +2,7 @@ package org.yaroslaavl.recruitingservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,12 +35,26 @@ public class SecurityConfig {
                         request -> request
                                 .requestMatchers(
                                         "/error",
+                                        "/api/v1/vacancies/search",
+                                        "/api/v1/vacancies/*/company",
+                                        "/api/v1/vacancies/count",
                                         "/actuator/health").permitAll()
                                 .requestMatchers(
                                         "/api/v1/categories/filtered",
-                                        "/api/v1/vacancies/").hasRole("VERIFIED_RECRUITER")
+                                        "/api/v1/vacancies/create").hasRole("VERIFIED_RECRUITER")
                                 .requestMatchers(
-                                        "/api/v1/report-system/send").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
+                                        "/api/v1/applications/apply").hasRole("VERIFIED_CANDIDATE")
+                                .requestMatchers(
+                                        "/api/v1/vacancies/create",
+                                        "/api/v1/vacancies/*",
+                                        "/api/v1/applications/search/*",
+                                        "/api/v1/applications/*").hasRole("VERIFIED_RECRUITER")
+                                .requestMatchers(
+                                        "/api/v1/vacancies/*/info",
+                                        "/api/v1/report-system/send",
+                                        "/api/v1/applications/*/info").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
+                                .requestMatchers(
+                                        "/api/v1/report-system/*").hasRole("MANAGER")
                 );
 
         return http.build();

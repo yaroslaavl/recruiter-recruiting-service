@@ -1,15 +1,15 @@
 package org.yaroslaavl.recruitingservice.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 import org.yaroslaavl.recruitingservice.dto.request.ReportRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemResponseDto;
-import org.yaroslaavl.recruitingservice.dto.response.ReportSystemShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.ReportSystemShortDto;
 import org.yaroslaavl.recruitingservice.service.ReportSystemService;
 
 import java.util.UUID;
@@ -33,12 +33,10 @@ public class ReportSystemController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/")
-    public ResponseEntity<Page<ReportSystemShortDto>> getReports(@RequestParam("vacancyId") UUID vacancyId,
-                                                                 @RequestParam(required = false, value = "status") RecruitingSystemStatus status,
-                                                                 @RequestParam(value = "size", defaultValue = "10") Integer size,
-                                                                 @RequestParam(value = "page", defaultValue = "0") Integer page) {
-        Pageable pageable = Pageable.ofSize(size).withPage(page);
+    @GetMapping("/search")
+    public ResponseEntity<PageShortDto<ReportSystemShortDto>> getFilteredReports(@RequestParam("vacancyId") UUID vacancyId,
+                                                                                 @RequestParam(required = false, value = "status") RecruitingSystemStatus status,
+                                                                                 @PageableDefault(size = 15) Pageable pageable) {
         return ResponseEntity.ok(reportSystemService.getFilteredReports(vacancyId, status, pageable));
     }
 
