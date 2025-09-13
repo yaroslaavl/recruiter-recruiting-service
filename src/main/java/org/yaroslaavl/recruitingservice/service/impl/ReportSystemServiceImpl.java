@@ -17,7 +17,8 @@ import org.yaroslaavl.recruitingservice.database.repository.ReportSystemReposito
 import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
 import org.yaroslaavl.recruitingservice.dto.request.ReportRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemResponseDto;
-import org.yaroslaavl.recruitingservice.dto.response.ReportSystemShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.ReportSystemShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.VacancyAlreadyReportedInfo;
 import org.yaroslaavl.recruitingservice.exception.*;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemLimitInfo;
@@ -26,10 +27,8 @@ import org.yaroslaavl.recruitingservice.mapper.ReportSystemMapper;
 import org.yaroslaavl.recruitingservice.service.ReportSystemService;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -138,14 +137,28 @@ public class ReportSystemServiceImpl implements ReportSystemService {
      * @return a paginated list of {@link ReportSystemShortDto} representing the filtered reports
      */
     @Override
-    public Page<ReportSystemShortDto> getFilteredReports(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable) {
+    public PageShortDto<ReportSystemShortDto> getFilteredReports(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable) {
         log.info("Getting filtered reports for vacancy with id {} and status {}", vacancyId, status);
         Vacancy vacancy = getVacancy(vacancyId);
 
         Page<ReportSystem> reportSystemsByFilteredStatus
                 = reportSystemRepository.findReportSystemsByFilteredStatus(vacancy.getId(), status, pageable);
 
-        return reportSystemsByFilteredStatus.map(reportSystemMapper::toShortDto);
+        Set<String> userIds = reportSystemsByFilteredStatus.stream().map(ReportSystem::getUserId).collect(Collectors.toSet());
+
+        Map<String, String> usersDisplayName = userFeignClient.usersDisplayName(userIds, securityContextService.getSecurityContext(Credentials.EMAIL));
+
+        if (usersDisplayName == null) {
+            usersDisplayName = Map.of();
+        }
+
+        log.info("Found {} filtered reports", reportSystemsByFilteredStatus.getTotalElements());
+        return new PageShortDto<>(
+                reportSystemMapper.toShortDto(reportSystemsByFilteredStatus.getContent(), usersDisplayName),
+                reportSystemsByFilteredStatus.getTotalElements(),
+                reportSystemsByFilteredStatus.getTotalPages(),
+                reportSystemsByFilteredStatus.getNumber(),
+                reportSystemsByFilteredStatus.getSize());
     }
 
     @Override

@@ -10,9 +10,9 @@ import java.util.UUID;
 
 public record VacancyResponseDto(
         @NotNull UUID companyId,
-        @NotNull UUID categoryId,
-        @NotBlank @Size(max = 100) String title,
-        @NotBlank @Size(max = 300) String description,
+        @NotBlank String category,
+        @Size(max = 100) @NotBlank String title,
+        @Size(max = 300) @NotBlank String description,
         @Size(max = 300) String requirementsMustHave,
         @Size(max = 300) String requirementsNiceToHave,
         @NotNull ContractType contractType,
@@ -23,6 +23,5 @@ public record VacancyResponseDto(
         Integer salaryFrom,
         Integer salaryTo,
         @NotNull VacancyStatus status,
-        @NotNull boolean isWaitingForApproval,
         @NotNull LocalDateTime createdAt
 ) { }

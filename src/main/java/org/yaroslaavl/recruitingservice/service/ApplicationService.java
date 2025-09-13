@@ -5,7 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyApplicationRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseDto;
-import org.yaroslaavl.recruitingservice.dto.response.ApplicationResponseDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 
 import java.util.UUID;
 
@@ -13,7 +14,7 @@ public interface ApplicationService {
 
     void applyVacancy(VacancyApplicationRequestDto vacancyApplicationRequestDto);
 
-    Page<ApplicationResponseDto> findFilteredApplications(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
+    PageShortDto<ApplicationShortDto> getFilteredApplications(UUID vacancyId, RecruitingSystemStatus status, String salary, String workMode, Integer availableHoursPerWeek, String availableForm, Pageable pageable);
 
     ApplicationDetailsResponseDto getApplicationDetails(UUID applicationId);
 

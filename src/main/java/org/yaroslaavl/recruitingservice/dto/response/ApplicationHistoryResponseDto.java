@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public record ApplicationHistoryResponseDto(
         @NotNull UUID id,
-        @NotNull UUID applicationId,
         @NotNull RecruitingSystemStatus oldStatus,
         @NotNull RecruitingSystemStatus newStatus,
         String changedBy,

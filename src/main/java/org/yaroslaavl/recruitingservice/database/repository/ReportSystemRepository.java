@@ -39,6 +39,7 @@ public interface ReportSystemRepository extends JpaRepository<ReportSystem, UUID
     SELECT rs FROM ReportSystem rs
     WHERE rs.vacancy.id = :vacancyId
     AND (:status IS NULL OR rs.status = :status)
+    ORDER BY rs.createdAt
     """)
     Page<ReportSystem> findReportSystemsByFilteredStatus(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
 }
