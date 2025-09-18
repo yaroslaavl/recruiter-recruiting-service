@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.enums.*;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyUpdateRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.VacancyResponseDto;
@@ -22,6 +23,7 @@ import org.yaroslaavl.recruitingservice.mapper.VacancyMapper;
 import org.yaroslaavl.recruitingservice.service.SecurityContextService;
 import org.yaroslaavl.recruitingservice.service.VacancyService;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
+import org.yaroslaavl.recruitingservice.util.NotificationStore;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,6 +40,7 @@ public class VacancyServiceImpl implements VacancyService {
     private final VacancyRepository vacancyRepository;
     private final SecurityContextService securityContextService;
     private final UserFeignClient userFeignClient;
+    private final RecruitingAppNotificationPublisher publisher;
 
     /**
      * Creates a new vacancy based on the provided vacancy request data.
@@ -66,10 +69,10 @@ public class VacancyServiceImpl implements VacancyService {
             entity.setWaitingForApproval(Boolean.TRUE);
             entity.setLastStatusChangeAt(LocalDateTime.now());
 
-            vacancyRepository.save(entity);
+            Vacancy vacancy = vacancyRepository.saveAndFlush(entity);
             log.info("Created vacancy: {}", entity.getId());
 
-            //send notification to Recruiter
+            publisher.publishInAppNotification(NotificationStore.inAppNotification(null, recruiterKeyId, String.valueOf(entity.getId()), "VACANCY_CREATED", Map.of( "vacancyTitle", vacancy.getTitle(), "createdAt", vacancy.getCreatedAt().toString())));
         } catch (Exception e) {
             log.error("Failed to create vacancy: {}", vacancyRequestDto, e);
             throw new CreationFailedException("Failed to create vacancy");
@@ -93,7 +96,6 @@ public class VacancyServiceImpl implements VacancyService {
 
         vacancyRepository.deleteById(vacancyId);
         log.info("Deleted vacancy: {} by recruiter with id: {}]", vacancyId, recruiterKeyId);
-        //send notification to Recruiter???
     }
 
     /**
@@ -178,6 +180,14 @@ public class VacancyServiceImpl implements VacancyService {
                 filteredVacancies.getSize());
     }
 
+    /**
+     * Retrieves a paginated list of vacancies for a specific company.
+     *
+     * @param companyId the unique identifier of the company whose vacancies are to be retrieved
+     * @param pageable the pagination information, including page number and page size
+     * @return a PageShortDto containing a list of VacancyShortDto objects, total items, total pages,
+     *         current page number, and page size
+     */
     @Override
     public PageShortDto<VacancyShortDto> getCompanyVacancies(UUID companyId, Pageable pageable) {
         log.info("Getting vacancies by company with id: {}", companyId);
@@ -199,6 +209,14 @@ public class VacancyServiceImpl implements VacancyService {
                 companyVacancies.getSize());
     }
 
+    /**
+     * Counts the number of vacancies for each company from the provided set of company IDs.
+     * Retrieves the vacancies for the given companies from the repository, groups them by company,
+     * and calculates the vacancy count. If a company has no vacancies, its count will be set to zero.
+     *
+     * @param companyIds a set of UUIDs representing the IDs of the companies whose vacancies are to be counted
+     * @return a map where the key is the company ID (UUID) and the value is the count of vacancies (Long) for that company
+     */
     @Override
     public Map<UUID, Long> countCompanyVacancies(Set<UUID> companyIds) {
         List<Vacancy> companyVacancies = vacancyRepository.getCompaniesVacancy(companyIds);

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.ReportSystem;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
 import org.yaroslaavl.recruitingservice.database.entity.enums.Credentials;
@@ -25,6 +26,7 @@ import org.yaroslaavl.recruitingservice.dto.response.ReportSystemLimitInfo;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
 import org.yaroslaavl.recruitingservice.mapper.ReportSystemMapper;
 import org.yaroslaavl.recruitingservice.service.ReportSystemService;
+import org.yaroslaavl.recruitingservice.util.NotificationStore;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -43,6 +45,7 @@ public class ReportSystemServiceImpl implements ReportSystemService {
     private final UserFeignClient userFeignClient;
     private final SecurityContextServiceImpl securityContextService;
     private final VacancyRepository vacancyRepository;
+    private final RecruitingAppNotificationPublisher publisher;
     private static final Integer REPORT_TIME_SPAN_DAYS = 7;
 
     /**
@@ -97,7 +100,7 @@ public class ReportSystemServiceImpl implements ReportSystemService {
                     .build();
 
             reportSystemRepository.save(reportSystem);
-            //send notification to Recruiter and candidate
+            publisher.publishInAppNotification(NotificationStore.inAppNotification(null, vacancy.getRecruiterId(), String.valueOf(vacancy.getId()), "VACANCY_REPORTED", Map.of("vacancyTitle", vacancy.getTitle(), "reason", reportRequestDto.vacancyReportReason().name())));
         } else {
             log.info("User with id '{}' is not approved", userId);
             throw new UserAccountApprovedException("User is not approved");

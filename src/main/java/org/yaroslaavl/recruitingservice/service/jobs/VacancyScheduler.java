@@ -5,14 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
 import org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus;
 import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
+import org.yaroslaavl.recruitingservice.util.NotificationStore;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -26,6 +29,7 @@ public class VacancyScheduler {
     private Duration vacancyTimeExpiration;
 
     private final VacancyRepository vacancyRepository;
+    private final RecruitingAppNotificationPublisher publisher;
 
     /**
      * Checks and updates the activation status of vacancies that are not currently active.
@@ -70,7 +74,8 @@ public class VacancyScheduler {
 
                 changedVacancies.add(vacancy);
                 log.info("Vacancy with id '{}' is now enabled", vacancy.getId());
-                //send notification to Recruiter
+                publisher.publishInAppNotification(NotificationStore.inAppNotification(null, vacancy.getRecruiterId(), String.valueOf(vacancy.getId()), "VACANCY_OPENED_FOR_APPLICATIONS", Map.of("vacancyTitle", vacancy.getTitle(),
+                        "applicationDeadline", vacancyTimeExpiration.toString())));
             }
         }
 
@@ -135,9 +140,9 @@ public class VacancyScheduler {
             }
 
             if (isChanged && isExpired) {
-                //send notification to Recruiter
+                publisher.publishInAppNotification(NotificationStore.inAppNotification(null, vacancy.getRecruiterId(), String.valueOf(vacancy.getId()), "VACANCY_EXPIRED", Map.of("vacancyTitle", vacancy.getTitle(), "expiredAt", LocalDateTime.now().toString())));
             } else if (isChanged) {
-                //send notification to Recruiter
+                publisher.publishInAppNotification(NotificationStore.inAppNotification(null, vacancy.getRecruiterId(), String.valueOf(vacancy.getId()), "VACANCY_TEMPORARY_BLOCKED", Map.of("vacancyTitle", vacancy.getTitle(), "reports", maxReportCount.toString())));
             }
         }
 

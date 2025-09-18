@@ -20,5 +20,5 @@ public interface ApplicationService {
 
     void changeApplicationStatus(UUID applicationId, RecruitingSystemStatus newStatus);
 
-
+    /*PageShortDto<CandidateApplicationsShortDto> getMyApplications(String candidateKeyId);*/
 }

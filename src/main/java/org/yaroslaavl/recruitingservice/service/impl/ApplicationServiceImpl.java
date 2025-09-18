@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.database.entity.ApplicationHistory;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
@@ -28,6 +29,7 @@ import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
 import org.yaroslaavl.recruitingservice.mapper.ApplicationMapper;
 import org.yaroslaavl.recruitingservice.service.ApplicationService;
 import org.yaroslaavl.recruitingservice.service.SecurityContextService;
+import org.yaroslaavl.recruitingservice.util.NotificationStore;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,6 +46,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicationHistoryRepository applicationHistoryRepository;
     private final VacancyRepository vacancyRepository;
     private final ApplicationMapper applicationMapper;
+    private final RecruitingAppNotificationPublisher publisher;
 
     private static final Map<RecruitingSystemStatus, EnumSet<RecruitingSystemStatus>> ALLOWED_STATUSES = Map.of(
             RecruitingSystemStatus.NEW, EnumSet.noneOf(RecruitingSystemStatus.class),
@@ -85,9 +88,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new GetCvException("Cv is not found or not readable");
         }
 
+        Vacancy vacancy = vacancyRepository.findById(vacancyApplicationRequestDto.vacancyId()).orElseThrow(
+                () -> new EntityNotFoundException("Vacancy with id: " + vacancyApplicationRequestDto.vacancyId() + " not found"));
+
         Optional<Application> optionalApplication = applicationRepository.findByVacancyIdAndCandidateId(
                 vacancyApplicationRequestDto.vacancyId(),
                 candidateKeyId);
+
+        UUID applicationSendId = null;
 
         if (optionalApplication.isPresent()) {
             Application application = optionalApplication.get();
@@ -118,12 +126,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 application.setAppliedAt(LocalDateTime.now());
 
                 applicationRepository.save(application);
+                applicationSendId =  application.getId();
                 applicationHistoryChanger(application, RecruitingSystemStatus.NEW, true);
             }
         } else {
-            Vacancy vacancy = vacancyRepository.findById(vacancyApplicationRequestDto.vacancyId()).orElseThrow(
-                    () -> new EntityNotFoundException("Vacancy with id: " + vacancyApplicationRequestDto.vacancyId() + " not found"));
-
             Application newApplication = Application.builder()
                     .vacancy(vacancy)
                     .cvId(vacancyApplicationRequestDto.cvId())
@@ -134,10 +140,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build();
 
             applicationRepository.save(newApplication);
+            applicationSendId =  newApplication.getId();
             applicationHistoryChanger(newApplication, RecruitingSystemStatus.NEW, true);
         }
 
-        //sendNotification
+        publisher.publishInAppNotification(NotificationStore.inAppNotification(null, candidateKeyId, String.valueOf(applicationSendId), "APPLICATION_SUBMITTED", Map.of("vacancyTitle", vacancy.getTitle(), "submittedAt",  LocalDateTime.now().toString())));
     }
 
     /**
@@ -254,10 +261,17 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (newStatus == RecruitingSystemStatus.ACCEPTED) {
             application.getVacancy().setStatus(VacancyStatus.ARCHIVED);
             vacancyRepository.save(application.getVacancy());
+            publisher.publishInAppNotification(NotificationStore.inAppNotification(null, application.getCandidateId(), String.valueOf(application.getId()), "APPLICATION_APPROVED",
+                    Map.of("vacancyTitle", application.getVacancy().getTitle(),
+                            "approvedAt", LocalDateTime.now().toString())));
         }
 
-        //send notification to candidate and recruiter if ACCEPTED
-        //send notification to candidate
+        publisher.publishInAppNotification(NotificationStore.inAppNotification(null, application.getCandidateId(), String.valueOf(application.getId()), "APPLICATION_STATUS_CHANGED",
+                Map.of("vacancyTitle", application.getVacancy().getTitle(),
+                        "oldStatus", application.getStatus().toString(),
+                        "newStatus", newStatus.toString(),
+                        "changedAt", LocalDateTime.now().toString())));
+
         applicationRepository.save(application);
     }
 
