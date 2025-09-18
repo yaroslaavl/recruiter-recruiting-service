@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationEventPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.enums.*;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyUpdateRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.VacancyResponseDto;
@@ -40,7 +40,7 @@ public class VacancyServiceImpl implements VacancyService {
     private final VacancyRepository vacancyRepository;
     private final SecurityContextService securityContextService;
     private final UserFeignClient userFeignClient;
-    private final RecruitingAppNotificationPublisher publisher;
+    private final RecruitingAppNotificationEventPublisher publisher;
 
     /**
      * Creates a new vacancy based on the provided vacancy request data.

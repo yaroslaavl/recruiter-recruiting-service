@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationEventPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.ReportSystem;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
 import org.yaroslaavl.recruitingservice.database.entity.enums.Credentials;
@@ -45,7 +45,7 @@ public class ReportSystemServiceImpl implements ReportSystemService {
     private final UserFeignClient userFeignClient;
     private final SecurityContextServiceImpl securityContextService;
     private final VacancyRepository vacancyRepository;
-    private final RecruitingAppNotificationPublisher publisher;
+    private final RecruitingAppNotificationEventPublisher publisher;
     private static final Integer REPORT_TIME_SPAN_DAYS = 7;
 
     /**

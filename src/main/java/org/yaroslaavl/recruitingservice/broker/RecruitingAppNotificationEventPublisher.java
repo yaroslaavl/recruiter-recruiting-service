@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.yaroslaavl.recruitingservice.service.VacancyService;
+import org.yaroslaavl.recruitingservice.broker.dto.NotificationDto;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RecruitingAppNotificationPublisher {
+public class RecruitingAppNotificationEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 

@@ -1,7 +1,7 @@
 package org.yaroslaavl.recruitingservice.util;
 
 import lombok.experimental.UtilityClass;
-import org.yaroslaavl.recruitingservice.broker.NotificationDto;
+import org.yaroslaavl.recruitingservice.broker.dto.NotificationDto;
 
 import java.util.Map;
 

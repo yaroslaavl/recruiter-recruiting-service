@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationEventPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
 import org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus;
 import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
@@ -29,7 +29,7 @@ public class VacancyScheduler {
     private Duration vacancyTimeExpiration;
 
     private final VacancyRepository vacancyRepository;
-    private final RecruitingAppNotificationPublisher publisher;
+    private final RecruitingAppNotificationEventPublisher publisher;
 
     /**
      * Checks and updates the activation status of vacancies that are not currently active.

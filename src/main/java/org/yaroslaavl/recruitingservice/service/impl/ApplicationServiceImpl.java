@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationPublisher;
+import org.yaroslaavl.recruitingservice.broker.RecruitingAppNotificationEventPublisher;
 import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.database.entity.ApplicationHistory;
 import org.yaroslaavl.recruitingservice.database.entity.Vacancy;
@@ -46,7 +46,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private final ApplicationHistoryRepository applicationHistoryRepository;
     private final VacancyRepository vacancyRepository;
     private final ApplicationMapper applicationMapper;
-    private final RecruitingAppNotificationPublisher publisher;
+    private final RecruitingAppNotificationEventPublisher publisher;
 
     private static final Map<RecruitingSystemStatus, EnumSet<RecruitingSystemStatus>> ALLOWED_STATUSES = Map.of(
             RecruitingSystemStatus.NEW, EnumSet.noneOf(RecruitingSystemStatus.class),

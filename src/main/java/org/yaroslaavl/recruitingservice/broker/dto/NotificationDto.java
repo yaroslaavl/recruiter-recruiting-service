@@ -1,4 +1,4 @@
-package org.yaroslaavl.recruitingservice.broker;
+package org.yaroslaavl.recruitingservice.broker.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
