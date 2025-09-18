@@ -40,7 +40,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
     SELECT v FROM Vacancy v
     JOIN FETCH v.category cat
     WHERE v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
-    AND (:textSearch IS NULL OR :textSearch = ""
+    AND (:textSearch = ""
         OR LOWER(v.title) LIKE CONCAT('%', LOWER(:textSearch), '%')
         OR LOWER(v.location) LIKE CONCAT('%', LOWER(:textSearch), '%')
         OR LOWER(cat.name) LIKE CONCAT('%', LOWER(:textSearch), '%')
@@ -59,7 +59,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
     SELECT COUNT(v) FROM Vacancy v
     JOIN v.category cat
     WHERE v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
-    AND (:textSearch IS NULL OR :textSearch = ""
+    AND (:textSearch = ""
         OR LOWER(v.title) LIKE CONCAT('%', LOWER(:textSearch), '%')
         OR LOWER(v.location) LIKE CONCAT('%', LOWER(:textSearch), '%')
         OR LOWER(cat.name) LIKE CONCAT('%', LOWER(:textSearch), '%')
