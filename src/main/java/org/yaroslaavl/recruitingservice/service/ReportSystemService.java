@@ -18,4 +18,6 @@ public interface ReportSystemService {
     PageShortDto<ReportSystemShortDto> getFilteredReports(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
 
     ReportSystemResponseDto getReport(UUID id);
+
+    /*PageShortDto<UserReportsShortDto> getMyReports();*/
 }
