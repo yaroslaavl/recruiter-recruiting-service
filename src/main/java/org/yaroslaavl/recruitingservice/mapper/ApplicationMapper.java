@@ -5,12 +5,16 @@ import org.mapstruct.Mapping;
 import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.CandidateApplicationsShortDto;
+import org.yaroslaavl.recruitingservice.feignClient.dto.CompanyPreviewFeignDto;
 import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
+import org.yaroslaavl.recruitingservice.mapper.helper.ApplicationMapperHelper;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {CommonMapper.class, ApplicationMapperHelper.class})
 public interface ApplicationMapper {
 
     @Mapping(target = "id", source = "application.id")
@@ -26,6 +30,22 @@ public interface ApplicationMapper {
     default List<ApplicationShortDto> toShortDto(List<Application> applications, Map<String, UserFeignDto> profileInfo) {
         return applications.stream()
                 .map(application -> toShortDto(application, profileInfo))
+                .toList();
+    }
+
+    @Mapping(target = "vacancyId", source = "vacancy.id")
+    @Mapping(target = "vacancyTitle", source = "vacancy.title")
+    @Mapping(target = "companyId", source = "vacancy.getCompanyId", qualifiedByName = "companyId")
+    @Mapping(target = "companyName", source = "vacancy.getCompanyId", qualifiedByName = "companyName")
+    @Mapping(target = "companyLogoUrl", source = "vacancy.getCompanyId", qualifiedByName = "companyLogoUrl")
+    @Mapping(target = "companyLocation", source = "vacancy.getCompanyId", qualifiedByName = "companyLocation")
+    @Mapping(target = "applicationNumber", source = "vacancy.id", qualifiedByName = "mapVacancyIdToNumberOfApplication")
+    @Mapping(target = "finishDate", source = "vacancy.createdAt", qualifiedByName = "mapVacancyIdToVacancyExpirationDate")
+    CandidateApplicationsShortDto toCandidateShortDto(Application application,  Map<UUID, CompanyPreviewFeignDto> previewInfo);
+
+    default List<CandidateApplicationsShortDto> toCandidateShortDto(List<Application> applications, Map<UUID, CompanyPreviewFeignDto> previewInfo) {
+        return applications.stream()
+                .map(application -> toCandidateShortDto(application, previewInfo))
                 .toList();
     }
 

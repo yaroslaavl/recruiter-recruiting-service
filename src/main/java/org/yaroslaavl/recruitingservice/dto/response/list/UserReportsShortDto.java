@@ -7,16 +7,9 @@ import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemSt
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record CandidateApplicationsShortDto(
+public record UserReportsShortDto(
         @NotNull UUID id,
-        @NotNull UUID vacancyId,
         @NotBlank String vacancyTitle,
-        @NotNull UUID companyId,
-        @NotBlank String companyName,
-        @NotBlank String companyLocation,
-        String companyLogoUrl,
-        String location,
-        Integer applicationNumber,
         @NotNull RecruitingSystemStatus status,
-        @NotNull LocalDateTime finishDate
+        @NotNull LocalDateTime reportedAt
 ) { }

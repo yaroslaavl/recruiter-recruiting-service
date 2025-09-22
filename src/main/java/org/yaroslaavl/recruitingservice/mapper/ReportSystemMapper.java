@@ -1,10 +1,12 @@
 package org.yaroslaavl.recruitingservice.mapper;
 
+import org.apache.catalina.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.yaroslaavl.recruitingservice.database.entity.ReportSystem;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ReportSystemShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.UserReportsShortDto;
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,12 @@ public interface ReportSystemMapper {
                 .map(reportSystem -> toShortDto(reportSystem, usersDisplayName))
                 .toList();
     }
+
+    @Mapping(target = "vacancyTitle", source = "vacancy.title")
+    @Mapping(target = "reportedAt", source = "createdAt")
+    UserReportsShortDto toUserShortDto(ReportSystem reportSystem);
+
+    List<UserReportsShortDto> toUserShortDto(List<ReportSystem> reportSystemList);
 
     @Mapping(target = "reportedAt", source = "createdAt")
     ReportSystemResponseDto toResponseDto(ReportSystem reportSystem);
