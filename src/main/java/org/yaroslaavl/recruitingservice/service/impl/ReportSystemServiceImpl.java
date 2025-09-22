@@ -21,6 +21,7 @@ import org.yaroslaavl.recruitingservice.dto.response.ReportSystemResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ReportSystemShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.VacancyAlreadyReportedInfo;
+import org.yaroslaavl.recruitingservice.dto.response.list.UserReportsShortDto;
 import org.yaroslaavl.recruitingservice.exception.*;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemLimitInfo;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
@@ -170,6 +171,24 @@ public class ReportSystemServiceImpl implements ReportSystemService {
                 .orElseThrow(() -> new EntityNotFoundException("Report not found with id: " + id));
 
         return reportSystemMapper.toResponseDto(reportSystem);
+    }
+
+    @Override
+    public PageShortDto<UserReportsShortDto> getMyReports(Pageable pageable) {
+        Page<ReportSystem> reports =
+                reportSystemRepository.findReportSystemsByUserId(securityContextService.getSecurityContext(Credentials.SUB), pageable);
+
+        if (reports.getContent().isEmpty()) {
+            new PageShortDto<>(Collections.emptyList(), 0, 0, 0, 0);
+        }
+
+        return new PageShortDto<>(
+                reportSystemMapper.toUserShortDto(reports.getContent()),
+                reports.getTotalPages(),
+                reports.getTotalElements(),
+                reports.getNumber(),
+                reports.getSize(
+        ));
     }
 
     private Vacancy getVacancy(UUID vacancyId) {

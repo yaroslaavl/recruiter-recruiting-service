@@ -6,6 +6,7 @@ import org.yaroslaavl.recruitingservice.dto.request.ReportRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ReportSystemShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.UserReportsShortDto;
 
 import java.util.UUID;
 
@@ -19,5 +20,5 @@ public interface ReportSystemService {
 
     ReportSystemResponseDto getReport(UUID id);
 
-    /*PageShortDto<UserReportsShortDto> getMyReports();*/
+    PageShortDto<UserReportsShortDto> getMyReports(Pageable pageable);
 }

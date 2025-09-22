@@ -24,4 +24,17 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     AND (:userFilteredIds IS NULL OR app.candidateId IN (:userFilteredIds))
     """)
     Page<Application> findApplicationsByVacancyIdAndStatus(UUID vacancyId, RecruitingSystemStatus status, List<String> userFilteredIds, Pageable pageable);
+
+    @Query("""
+    SELECT app FROM Application app
+    WHERE app.candidateId = :candidateId
+    ORDER BY app.appliedAt DESC
+    """)
+    Page<Application> findApplicationsByCandidateId(String candidateId, Pageable pageable);
+
+    @Query("""
+    SELECT COUNT(app) FROM Application app
+    WHERE app.vacancy.id = :vacancyId
+    """)
+    int findApplicationsByVacancyId(UUID vacancyId);
 }

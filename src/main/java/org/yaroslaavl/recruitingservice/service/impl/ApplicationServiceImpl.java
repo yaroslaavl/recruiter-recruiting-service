@@ -21,9 +21,11 @@ import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
 import org.yaroslaavl.recruitingservice.dto.request.VacancyApplicationRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.CandidateApplicationsShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.exception.*;
 import org.yaroslaavl.recruitingservice.feignClient.cv.CvFeignClient;
+import org.yaroslaavl.recruitingservice.feignClient.dto.CompanyPreviewFeignDto;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
 import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
 import org.yaroslaavl.recruitingservice.mapper.ApplicationMapper;
@@ -33,6 +35,7 @@ import org.yaroslaavl.recruitingservice.util.NotificationStore;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -207,27 +210,29 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public ApplicationDetailsResponseDto getApplicationDetails(UUID applicationId) {
-        Application application = checkAndGetApplicationBack(applicationId);
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Application with id: " + applicationId + " not found"
+                ));
 
-        String userId = securityContextService.
-                getSecurityContext(Credentials.SUB);
+        String userId = securityContextService.getSecurityContext(Credentials.SUB);
+        if (application.getVacancy().getRecruiterId().equals(userId)
+                && application.getStatus() == RecruitingSystemStatus.NEW) {
 
-        if (application.getCandidateId().equals(userId)) {
-            return applicationMapper.toApplicationDetailsDto(application);
-        }
-
-        if (!application.getVacancy().getRecruiterId().equals(userId)) {
-            throw new ApplicationAccessException("User does not have access to application");
-        }
-
-        if (application.getStatus() == RecruitingSystemStatus.NEW) {
             application.setStatus(RecruitingSystemStatus.VIEWED);
 
-            applicationHistoryChanger(application, RecruitingSystemStatus.VIEWED, false);
+            applicationHistoryChanger(
+                    application,
+                    RecruitingSystemStatus.VIEWED,
+                    Boolean.FALSE
+            );
+
             applicationRepository.save(application);
         }
+
         return applicationMapper.toApplicationDetailsDto(application);
     }
+
 
     /**
      * Changes the status of an application to the specified new status. Validates the current state of the application
@@ -243,7 +248,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Transactional
     public void changeApplicationStatus(UUID applicationId, RecruitingSystemStatus newStatus) {
-        Application application = checkAndGetApplicationBack(applicationId);
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new EntityNotFoundException("Application with id: " + applicationId + " not found"));
 
         if (application.getStatus() == RecruitingSystemStatus.NEW) {
             throw new ViewApplicationException("Recruiter can't change status of application");
@@ -275,15 +281,28 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.save(application);
     }
 
-    private Application checkAndGetApplicationBack(UUID applicationId) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new EntityNotFoundException("Application not found"));
+    @Override
+    public PageShortDto<CandidateApplicationsShortDto> getMyApplications(Pageable pageable) {
+        Page<Application> applications
+                = applicationRepository.findApplicationsByCandidateId(securityContextService.getSecurityContext(Credentials.SUB), pageable);
 
-        if (!application.getVacancy().getRecruiterId()
-                .equals(securityContextService.getSecurityContext(Credentials.SUB))) {
-            throw new RecruiterNotBelongToCompanyOrVacancyException("Recruiter is not belong to vacancy");
+        Map<UUID, CompanyPreviewFeignDto> companyPreview =
+                userFeignClient.previewInfo(applications.getContent().stream()
+                        .map(Application::getVacancy)
+                        .map(Vacancy::getId)
+                        .collect(Collectors.toSet()));
+
+        if (applications.getContent().isEmpty()) {
+            return new PageShortDto<>(Collections.emptyList(), 0, 0, 0, 0);
         }
-        return application;
+
+        return new PageShortDto<>(
+                applicationMapper.toCandidateShortDto(applications.getContent(),  companyPreview),
+                applications.getTotalElements(),
+                applications.getTotalPages(),
+                applications.getNumber(),
+                applications.getSize()
+        );
     }
 
     private void applicationHistoryChanger(Application application,

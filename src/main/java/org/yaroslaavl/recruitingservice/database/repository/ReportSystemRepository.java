@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.database.entity.ReportSystem;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 
@@ -42,4 +41,8 @@ public interface ReportSystemRepository extends JpaRepository<ReportSystem, UUID
     ORDER BY rs.createdAt
     """)
     Page<ReportSystem> findReportSystemsByFilteredStatus(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
+
+    Optional<ReportSystem> findReportSystemsByUserIdAndId(String userId, UUID id);
+
+    Page<ReportSystem> findReportSystemsByUserId(String userId, Pageable pageable);
 }
