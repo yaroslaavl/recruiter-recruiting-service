@@ -11,6 +11,7 @@ import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemSt
 import org.yaroslaavl.recruitingservice.dto.request.VacancyApplicationRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.CandidateApplicationsShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.service.ApplicationService;
 
@@ -41,13 +42,20 @@ public class ApplicationController {
     }
 
     @GetMapping("/{id}/info")
+    @PreAuthorize("hasAnyRole('VERIFIED_CANDIDATE', 'VERIFIED_RECRUITER') and @accessChecker.hasAccessToApplication(#id)")
     public ResponseEntity<ApplicationDetailsResponseDto> getApplicationDetails(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(applicationService.getApplicationDetails(id));
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER') and @accessChecker.hasAccessToChangeApplicationStatus(#id)")
     public ResponseEntity<Void> changeApplicationStatus(@PathVariable("id") UUID id, @RequestParam("newStatus") RecruitingSystemStatus newStatus) {
         applicationService.changeApplicationStatus(id, newStatus);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<PageShortDto<CandidateApplicationsShortDto>> getMyApplications(@PageableDefault(size = 15) Pageable pageable) {
+        return ResponseEntity.ok(applicationService.getMyApplications(pageable));
     }
 }

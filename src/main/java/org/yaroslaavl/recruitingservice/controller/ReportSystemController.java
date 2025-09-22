@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemStatus;
 import org.yaroslaavl.recruitingservice.dto.request.ReportRequestDto;
 import org.yaroslaavl.recruitingservice.dto.response.ReportSystemResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ReportSystemShortDto;
+import org.yaroslaavl.recruitingservice.dto.response.list.UserReportsShortDto;
 import org.yaroslaavl.recruitingservice.service.ReportSystemService;
 
 import java.util.UUID;
@@ -27,7 +29,7 @@ public class ReportSystemController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{id}/resolve")
     public ResponseEntity<Void> resolveReport(@PathVariable("id") UUID id, @RequestParam("status") RecruitingSystemStatus newStatus) {
         reportSystemService.resolveReport(id, newStatus);
         return ResponseEntity.noContent().build();
@@ -41,7 +43,13 @@ public class ReportSystemController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('MANAGER') or (hasAnyRole('VERIFIED_CANDIDATE', 'VERIFIED_RECRUITER') and @accessChecker.hasAccessToReport(#id))")
     public ResponseEntity<ReportSystemResponseDto> getReport(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(reportSystemService.getReport(id));
+    }
+
+    @GetMapping("/mine")
+    public ResponseEntity<PageShortDto<UserReportsShortDto>> getMyReports(@PageableDefault(size = 15) Pageable pageable) {
+        return ResponseEntity.ok(reportSystemService.getMyReports(pageable));
     }
 }
