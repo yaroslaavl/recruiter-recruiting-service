@@ -43,18 +43,18 @@ public class SecurityConfig {
                                         "/api/v1/categories/filtered",
                                         "/api/v1/vacancies/create").hasRole("VERIFIED_RECRUITER")
                                 .requestMatchers(
-                                        "/api/v1/applications/apply").hasRole("VERIFIED_CANDIDATE")
+                                        "/api/v1/applications/apply",
+                                        "/api/v1/report-system/mine",
+                                        "/api/v1/applications/mine").hasRole("VERIFIED_CANDIDATE")
                                 .requestMatchers(
                                         "/api/v1/vacancies/create",
                                         "/api/v1/vacancies/*",
-                                        "/api/v1/applications/search/*",
-                                        "/api/v1/applications/*").hasRole("VERIFIED_RECRUITER")
+                                        "/api/v1/applications/search/*").hasRole("VERIFIED_RECRUITER")
                                 .requestMatchers(
                                         "/api/v1/vacancies/*/info",
-                                        "/api/v1/report-system/send",
-                                        "/api/v1/applications/*/info").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
+                                        "/api/v1/report-system/send").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
                                 .requestMatchers(
-                                        "/api/v1/report-system/*").hasRole("MANAGER")
+                                        "/api/v1/report-system/*/resolve").hasRole("MANAGER")
                 );
 
         return http.build();
