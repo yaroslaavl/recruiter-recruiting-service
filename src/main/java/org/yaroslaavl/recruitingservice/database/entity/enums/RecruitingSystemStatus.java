@@ -2,24 +2,24 @@ package org.yaroslaavl.recruitingservice.database.entity.enums;
 
 public enum RecruitingSystemStatus {
 
-    //VACANCY
+    //APPLICATION
     NO_MORE_INTERESTS,
 
-    //VACANCY
+    //APPLICATION
     VIEWED,
 
-    //VACANCY
+    //APPLICATION
     IN_PROGRESS,
 
-    //VACANCY
+    //APPLICATION
     ACCEPTED,
 
     //REPORT SYSTEM
     RESOLVED,
 
-    //VACANCY AND REPORT SYSTEM
+    //APPLICATION AND REPORT SYSTEM
     NEW,
 
-    //VACANCY AND REPORT SYSTEM
+    //APPLICATION AND REPORT SYSTEM
     REJECTED
 }

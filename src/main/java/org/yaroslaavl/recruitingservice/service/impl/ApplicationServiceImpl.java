@@ -25,6 +25,7 @@ import org.yaroslaavl.recruitingservice.dto.response.list.CandidateApplicationsS
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.exception.*;
 import org.yaroslaavl.recruitingservice.feignClient.cv.CvFeignClient;
+import org.yaroslaavl.recruitingservice.feignClient.dto.ApplicationChatInfo;
 import org.yaroslaavl.recruitingservice.feignClient.dto.CompanyPreviewFeignDto;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
 import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
@@ -303,6 +304,26 @@ public class ApplicationServiceImpl implements ApplicationService {
                 applications.getNumber(),
                 applications.getSize()
         );
+    }
+
+    @Override
+    public boolean isOpenedForChatting(UUID applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new EntityNotFoundException("Application with id: " + applicationId + " not found"));
+       return application.getStatus() == RecruitingSystemStatus.IN_PROGRESS;
+    }
+
+    @Override
+    public List<ApplicationChatInfo> getPreviewApplicationInfo(Set<UUID> applicationIds) {
+        List<Application> applications = applicationRepository.findAllById(applicationIds);
+
+        Set<UUID> companyIds = applications.stream()
+                .map(Application::getVacancy)
+                .map(Vacancy::getCompanyId)
+                .collect(Collectors.toSet());
+
+        Map<UUID, CompanyPreviewFeignDto> companiesInfo = userFeignClient.previewInfo(companyIds);
+        return applicationMapper.toApplicationChatInfo(applications, companiesInfo);
     }
 
     private void applicationHistoryChanger(Application application,
