@@ -55,6 +55,9 @@ public class SecurityConfig {
                                         "/api/v1/report-system/send").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
                                 .requestMatchers(
                                         "/api/v1/report-system/*/resolve").hasRole("MANAGER")
+                                .requestMatchers(
+                                        "/api/v1/applications/chat-open",
+                                        "/api/v1/applications/chat-previews").hasRole("INTERNAL_SERVICE")
                 );
 
         return http.build();

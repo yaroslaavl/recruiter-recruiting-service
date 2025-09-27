@@ -1,7 +1,6 @@
 package org.yaroslaavl.recruitingservice.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +12,11 @@ import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseD
 import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.CandidateApplicationsShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
+import org.yaroslaavl.recruitingservice.feignClient.dto.ApplicationChatInfo;
 import org.yaroslaavl.recruitingservice.service.ApplicationService;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -57,5 +59,15 @@ public class ApplicationController {
     @GetMapping("/mine")
     public ResponseEntity<PageShortDto<CandidateApplicationsShortDto>> getMyApplications(@PageableDefault(size = 15) Pageable pageable) {
         return ResponseEntity.ok(applicationService.getMyApplications(pageable));
+    }
+
+    @GetMapping("/chat-open")
+    public boolean isOpenedForChatting(@RequestParam("applicationId") UUID applicationId) {
+        return applicationService.isOpenedForChatting(applicationId);
+    }
+
+    @GetMapping("/chat-previews")
+    public ResponseEntity<List<ApplicationChatInfo>> getPreviewApplications(@RequestParam("applicationIds") Set<UUID> applicationIds) {
+        return ResponseEntity.ok(applicationService.getPreviewApplicationInfo(applicationIds));
     }
 }
