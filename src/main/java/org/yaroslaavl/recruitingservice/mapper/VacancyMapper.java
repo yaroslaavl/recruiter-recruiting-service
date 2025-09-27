@@ -25,11 +25,11 @@ public interface VacancyMapper {
     VacancyResponseDto toDto(Vacancy vacancy);
 
     @Mapping(target = "category", source = "vacancy.category.name")
-    @Mapping(target = "companyId", source = "vacancy.getCompanyId", qualifiedByName = "companyId")
-    @Mapping(target = "companyName", source = "vacancy.getCompanyId", qualifiedByName = "companyName")
-    @Mapping(target = "companyLogoUrl", source = "vacancy.getCompanyId", qualifiedByName = "companyLogoUrl")
-    @Mapping(target = "companyLocation", source = "vacancy.getCompanyId", qualifiedByName = "companyLocation")
-    VacancyShortDto toShortDto(Vacancy vacancy, Map<UUID, CompanyPreviewFeignDto> previewInfo);
+    @Mapping(target = "companyId", source = "vacancy.companyId", qualifiedByName = "companyId")
+    @Mapping(target = "companyName", source = "vacancy.companyId", qualifiedByName = "companyName")
+    @Mapping(target = "companyLogoUrl", source = "vacancy.companyId", qualifiedByName = "companyLogoUrl")
+    @Mapping(target = "companyLocation", source = "vacancy.companyId", qualifiedByName = "companyLocation")
+    VacancyShortDto toShortDto(Vacancy vacancy, @Context Map<UUID, CompanyPreviewFeignDto> previewInfo);
 
     default List<VacancyShortDto> toShortDto(List<Vacancy> vacancies, Map<UUID, CompanyPreviewFeignDto> previewInfo) {
         return vacancies.stream()

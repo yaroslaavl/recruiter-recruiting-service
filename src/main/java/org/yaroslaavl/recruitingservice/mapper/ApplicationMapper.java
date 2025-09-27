@@ -1,11 +1,13 @@
 package org.yaroslaavl.recruitingservice.mapper;
 
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.dto.response.ApplicationDetailsResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.ApplicationShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.CandidateApplicationsShortDto;
+import org.yaroslaavl.recruitingservice.feignClient.dto.ApplicationChatInfo;
 import org.yaroslaavl.recruitingservice.feignClient.dto.CompanyPreviewFeignDto;
 import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
 import org.yaroslaavl.recruitingservice.mapper.helper.ApplicationMapperHelper;
@@ -33,15 +35,15 @@ public interface ApplicationMapper {
                 .toList();
     }
 
-    @Mapping(target = "vacancyId", source = "vacancy.id")
-    @Mapping(target = "vacancyTitle", source = "vacancy.title")
-    @Mapping(target = "companyId", source = "vacancy.getCompanyId", qualifiedByName = "companyId")
-    @Mapping(target = "companyName", source = "vacancy.getCompanyId", qualifiedByName = "companyName")
-    @Mapping(target = "companyLogoUrl", source = "vacancy.getCompanyId", qualifiedByName = "companyLogoUrl")
-    @Mapping(target = "companyLocation", source = "vacancy.getCompanyId", qualifiedByName = "companyLocation")
-    @Mapping(target = "applicationNumber", source = "vacancy.id", qualifiedByName = "mapVacancyIdToNumberOfApplication")
-    @Mapping(target = "finishDate", source = "vacancy.createdAt", qualifiedByName = "mapVacancyIdToVacancyExpirationDate")
-    CandidateApplicationsShortDto toCandidateShortDto(Application application,  Map<UUID, CompanyPreviewFeignDto> previewInfo);
+    @Mapping(target = "vacancyId", source = "application.vacancy.id")
+    @Mapping(target = "vacancyTitle", source = "application.vacancy.title")
+    @Mapping(target = "companyId", source = "application.vacancy.companyId", qualifiedByName = "companyId")
+    @Mapping(target = "companyName", source = "application.vacancy.companyId", qualifiedByName = "companyName")
+    @Mapping(target = "companyLogoUrl", source = "application.vacancy.companyId", qualifiedByName = "companyLogoUrl")
+    @Mapping(target = "companyLocation", source = "application.vacancy.companyId", qualifiedByName = "companyLocation")
+    @Mapping(target = "applicationNumber", source = "application.vacancy.id", qualifiedByName = "mapVacancyIdToNumberOfApplication")
+    @Mapping(target = "finishDate", source = "application.vacancy.id", qualifiedByName = "mapVacancyIdToVacancyExpirationDate")
+    CandidateApplicationsShortDto toCandidateShortDto(Application application, @Context Map<UUID, CompanyPreviewFeignDto> previewInfo);
 
     default List<CandidateApplicationsShortDto> toCandidateShortDto(List<Application> applications, Map<UUID, CompanyPreviewFeignDto> previewInfo) {
         return applications.stream()
@@ -56,6 +58,17 @@ public interface ApplicationMapper {
     @Mapping(target = "salaryTo", source = "vacancy.salaryTo")
     @Mapping(target = "recruiterId", source = "vacancy.recruiterId")
     ApplicationDetailsResponseDto toApplicationDetailsDto(Application application);
+
+    @Mapping(target = "applicationId", source = "application.id")
+    @Mapping(target = "vacancyTitle", source = "application.vacancy.title")
+    @Mapping(target = "companyLogoUrl", source = "application.vacancy.companyId", qualifiedByName = "companyLogoUrl")
+    ApplicationChatInfo toApplicationChatInfo(Application application, Map<UUID, CompanyPreviewFeignDto> previewInfo);
+
+    default List<ApplicationChatInfo> toApplicationChatInfo(List<Application> applications, Map<UUID, CompanyPreviewFeignDto> previewInfo) {
+        return applications.stream()
+                .map(application -> toApplicationChatInfo(application, previewInfo))
+                .toList();
+    }
 
     default String mapCandidateSalary(Application application, Map<String, UserFeignDto> profileInfo) {
         UserFeignDto user = profileInfo.get(application.getCandidateId());
