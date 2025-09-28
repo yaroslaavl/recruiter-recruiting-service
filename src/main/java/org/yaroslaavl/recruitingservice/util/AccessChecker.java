@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.database.entity.enums.Credentials;
@@ -13,8 +14,9 @@ import org.yaroslaavl.recruitingservice.service.SecurityContextService;
 
 import java.util.UUID;
 
-@Component("accessChecker")
+@Slf4j
 @RequiredArgsConstructor
+@Component("accessChecker")
 public class AccessChecker {
 
     private final SecurityContextService securityContextService;
@@ -23,8 +25,10 @@ public class AccessChecker {
 
     public boolean hasAccessToReport(UUID id) {
         String userId = securityContextService.getSecurityContext(Credentials.SUB);
-        return userId != null && !userId.isEmpty()
+        boolean hasAccess = userId != null && !userId.isEmpty()
                 && reportSystemRepository.findReportSystemsByUserIdAndId(userId, id).isPresent();
+        log.info("Access check for user {} to report {} = {}", userId, id, hasAccess);
+        return hasAccess;
     }
 
     public boolean hasAccessToApplication(UUID id) {
