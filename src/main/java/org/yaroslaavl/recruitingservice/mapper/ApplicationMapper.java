@@ -41,6 +41,7 @@ public interface ApplicationMapper {
     @Mapping(target = "companyName", source = "application.vacancy.companyId", qualifiedByName = "companyName")
     @Mapping(target = "companyLogoUrl", source = "application.vacancy.companyId", qualifiedByName = "companyLogoUrl")
     @Mapping(target = "companyLocation", source = "application.vacancy.companyId", qualifiedByName = "companyLocation")
+    @Mapping(target = "location", source = "application.vacancy.location")
     @Mapping(target = "applicationNumber", source = "application.vacancy.id", qualifiedByName = "mapVacancyIdToNumberOfApplication")
     @Mapping(target = "finishDate", source = "application.vacancy.id", qualifiedByName = "mapVacancyIdToVacancyExpirationDate")
     CandidateApplicationsShortDto toCandidateShortDto(Application application, @Context Map<UUID, CompanyPreviewFeignDto> previewInfo);
@@ -62,7 +63,7 @@ public interface ApplicationMapper {
     @Mapping(target = "applicationId", source = "application.id")
     @Mapping(target = "vacancyTitle", source = "application.vacancy.title")
     @Mapping(target = "companyLogoUrl", source = "application.vacancy.companyId", qualifiedByName = "companyLogoUrl")
-    ApplicationChatInfo toApplicationChatInfo(Application application, Map<UUID, CompanyPreviewFeignDto> previewInfo);
+    ApplicationChatInfo toApplicationChatInfo(Application application, @Context Map<UUID, CompanyPreviewFeignDto> previewInfo);
 
     default List<ApplicationChatInfo> toApplicationChatInfo(List<Application> applications, Map<UUID, CompanyPreviewFeignDto> previewInfo) {
         return applications.stream()
