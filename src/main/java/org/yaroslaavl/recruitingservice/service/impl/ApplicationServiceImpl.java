@@ -290,7 +290,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Map<UUID, CompanyPreviewFeignDto> companyPreview =
                 userFeignClient.previewInfo(applications.getContent().stream()
                         .map(Application::getVacancy)
-                        .map(Vacancy::getId)
+                        .map(Vacancy::getCompanyId)
                         .collect(Collectors.toSet()));
 
         if (applications.getContent().isEmpty()) {
@@ -315,7 +315,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationChatInfo> getPreviewApplicationInfo(Set<UUID> applicationIds) {
-        List<Application> applications = applicationRepository.findAllById(applicationIds);
+        List<Application> applications = applicationRepository.findAllByApplicationsIds(applicationIds);
 
         Set<UUID> companyIds = applications.stream()
                 .map(Application::getVacancy)

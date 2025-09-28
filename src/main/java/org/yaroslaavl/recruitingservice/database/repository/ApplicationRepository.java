@@ -10,6 +10,7 @@ import org.yaroslaavl.recruitingservice.database.entity.enums.RecruitingSystemSt
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Repository
@@ -27,6 +28,7 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
 
     @Query("""
     SELECT app FROM Application app
+    JOIN FETCH app.vacancy v
     WHERE app.candidateId = :candidateId
     ORDER BY app.appliedAt DESC
     """)
@@ -37,4 +39,11 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     WHERE app.vacancy.id = :vacancyId
     """)
     int findApplicationsByVacancyId(UUID vacancyId);
+
+    @Query("""
+    SELECT app FROM Application app
+    JOIN FETCH app.vacancy v
+    WHERE (:applicationIds IS NULL OR app.id IN (:applicationIds))
+    """)
+    List<Application> findAllByApplicationsIds(Set<UUID> applicationIds);
 }
