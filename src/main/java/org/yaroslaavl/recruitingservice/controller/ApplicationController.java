@@ -27,20 +27,26 @@ public class ApplicationController {
     private final ApplicationService applicationService;
 
     @PostMapping("/apply")
+    @PreAuthorize("hasRole('VERIFIED_CANDIDATE')")
     public ResponseEntity<Void> apply(@RequestBody VacancyApplicationRequestDto vacancyApplicationRequestDto) {
         applicationService.applyVacancy(vacancyApplicationRequestDto);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search/{vacancyId}")
-    public ResponseEntity<PageShortDto<ApplicationShortDto>> getApplications(@PathVariable("vacancyId") UUID vacancyId,
-                                                                             @RequestParam(required = false, name = "status") RecruitingSystemStatus status,
-                                                                             @RequestParam(required = false) String salary,
-                                                                             @RequestParam(required = false) String workMode,
-                                                                             @RequestParam(required = false) Integer availableHoursPerWeek,
-                                                                             @RequestParam(required = false) String availableFrom,
-                                                                             @PageableDefault(size = 15) Pageable pageable) {
-        return ResponseEntity.ok(applicationService.getFilteredApplications(vacancyId, status, salary, workMode, availableHoursPerWeek, availableFrom, pageable));
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
+    public ResponseEntity<PageShortDto<ApplicationShortDto>> getApplications(
+            @PathVariable("vacancyId") UUID vacancyId,
+            @RequestParam(required = false, name = "status") RecruitingSystemStatus status,
+            @RequestParam(required = false) String salary,
+            @RequestParam(required = false) String workMode,
+            @RequestParam(required = false) Integer availableHoursPerWeek,
+            @RequestParam(required = false) String availableFrom,
+            @PageableDefault(size = 15) Pageable pageable
+    ) {
+        return ResponseEntity.ok(
+                applicationService.getFilteredApplications(vacancyId, status, salary, workMode, availableHoursPerWeek, availableFrom, pageable)
+        );
     }
 
     @GetMapping("/{id}/info")
@@ -51,22 +57,26 @@ public class ApplicationController {
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('VERIFIED_RECRUITER') and @accessChecker.hasAccessToChangeApplicationStatus(#id)")
-    public ResponseEntity<Void> changeApplicationStatus(@PathVariable("id") UUID id, @RequestParam("newStatus") RecruitingSystemStatus newStatus) {
+    public ResponseEntity<Void> changeApplicationStatus(@PathVariable("id") UUID id,
+                                                        @RequestParam("newStatus") RecruitingSystemStatus newStatus) {
         applicationService.changeApplicationStatus(id, newStatus);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/mine")
+    @PreAuthorize("hasRole('VERIFIED_CANDIDATE')")
     public ResponseEntity<PageShortDto<CandidateApplicationsShortDto>> getMyApplications(@PageableDefault(size = 15) Pageable pageable) {
         return ResponseEntity.ok(applicationService.getMyApplications(pageable));
     }
 
     @GetMapping("/chat-open")
+    @PreAuthorize("hasRole('INTERNAL_SERVICE')")
     public boolean isOpenedForChatting(@RequestParam("applicationId") UUID applicationId) {
         return applicationService.isOpenedForChatting(applicationId);
     }
 
     @GetMapping("/chat-previews")
+    @PreAuthorize("hasRole('INTERNAL_SERVICE')")
     public ResponseEntity<List<ApplicationChatInfo>> getPreviewApplications(@RequestParam("applicationIds") Set<UUID> applicationIds) {
         return ResponseEntity.ok(applicationService.getPreviewApplicationInfo(applicationIds));
     }

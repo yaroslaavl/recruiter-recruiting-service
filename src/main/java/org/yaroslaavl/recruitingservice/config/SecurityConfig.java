@@ -35,29 +35,11 @@ public class SecurityConfig {
                         request -> request
                                 .requestMatchers(
                                         "/error",
+                                        "/actuator/health",
                                         "/api/v1/vacancies/search",
                                         "/api/v1/vacancies/*/company",
-                                        "/api/v1/vacancies/count",
-                                        "/actuator/health").permitAll()
-                                .requestMatchers(
-                                        "/api/v1/categories/filtered",
-                                        "/api/v1/vacancies/create").hasRole("VERIFIED_RECRUITER")
-                                .requestMatchers(
-                                        "/api/v1/applications/apply",
-                                        "/api/v1/report-system/mine",
-                                        "/api/v1/applications/mine").hasRole("VERIFIED_CANDIDATE")
-                                .requestMatchers(
-                                        "/api/v1/vacancies/create",
-                                        "/api/v1/vacancies/*",
-                                        "/api/v1/applications/search/*").hasRole("VERIFIED_RECRUITER")
-                                .requestMatchers(
-                                        "/api/v1/vacancies/*/info",
-                                        "/api/v1/report-system/send").hasAnyRole("VERIFIED_RECRUITER", "VERIFIED_CANDIDATE")
-                                .requestMatchers(
-                                        "/api/v1/report-system/*/resolve").hasRole("MANAGER")
-                                .requestMatchers(
-                                        "/api/v1/applications/chat-open",
-                                        "/api/v1/applications/chat-previews").hasRole("INTERNAL_SERVICE")
+                                        "/api/v1/vacancies/count").permitAll()
+                                .anyRequest().authenticated()
                 );
 
         return http.build();

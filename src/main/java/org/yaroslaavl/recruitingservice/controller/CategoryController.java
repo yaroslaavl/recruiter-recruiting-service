@@ -2,6 +2,7 @@ package org.yaroslaavl.recruitingservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,7 +20,11 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping("/filtered")
-    public ResponseEntity<List<CategoryResponseDto>> findFilteredCategories(@RequestParam(value = "searchName", required = false) String searchName) {
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
+    public ResponseEntity<List<CategoryResponseDto>> findFilteredCategories(
+            @RequestParam(value = "searchName", required = false) String searchName
+    ) {
         return ResponseEntity.ok(categoryService.findFilteredCategories(searchName));
     }
 }
+

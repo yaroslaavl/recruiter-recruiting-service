@@ -24,18 +24,22 @@ public class ReportSystemController {
     private final ReportSystemService reportSystemService;
 
     @PostMapping("/send")
+    @PreAuthorize("hasAnyRole('VERIFIED_RECRUITER', 'VERIFIED_CANDIDATE')")
     public ResponseEntity<Void> sendReport(@RequestBody ReportRequestDto reportRequestDto) {
         reportSystemService.report(reportRequestDto);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/resolve")
-    public ResponseEntity<Void> resolveReport(@PathVariable("id") UUID id, @RequestParam("status") RecruitingSystemStatus newStatus) {
+    @PreAuthorize("hasRole('MANAGER')")
+    public ResponseEntity<Void> resolveReport(@PathVariable("id") UUID id,
+                                              @RequestParam("status") RecruitingSystemStatus newStatus) {
         reportSystemService.resolveReport(id, newStatus);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
     public ResponseEntity<PageShortDto<ReportSystemShortDto>> getFilteredReports(@RequestParam("vacancyId") UUID vacancyId,
                                                                                  @RequestParam(required = false, value = "status") RecruitingSystemStatus status,
                                                                                  @PageableDefault(size = 15) Pageable pageable) {
@@ -43,13 +47,16 @@ public class ReportSystemController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or (hasAnyRole('VERIFIED_CANDIDATE', 'VERIFIED_RECRUITER') and @accessChecker.hasAccessToReport(#id))")
+    @PreAuthorize("hasRole('MANAGER') or " +
+            "(hasAnyRole('VERIFIED_CANDIDATE', 'VERIFIED_RECRUITER') and @accessChecker.hasAccessToReport(#id))")
     public ResponseEntity<ReportSystemResponseDto> getReport(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(reportSystemService.getReport(id));
     }
 
     @GetMapping("/mine")
+    @PreAuthorize("hasAnyRole('VERIFIED_RECRUITER', 'VERIFIED_CANDIDATE')")
     public ResponseEntity<PageShortDto<UserReportsShortDto>> getMyReports(@PageableDefault(size = 15) Pageable pageable) {
         return ResponseEntity.ok(reportSystemService.getMyReports(pageable));
     }
 }
+
