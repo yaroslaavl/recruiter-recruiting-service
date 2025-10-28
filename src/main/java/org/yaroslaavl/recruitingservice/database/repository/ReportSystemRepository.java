@@ -46,7 +46,7 @@ public interface ReportSystemRepository extends JpaRepository<ReportSystem, UUID
 
     @Query("""
     SELECT rs FROM ReportSystem rs
-    JOIN FETCH rs.vacancy v
+    JOIN rs.vacancy v
     WHERE (:userId IS NULL OR rs.userId = :userId)
     """)
     Page<ReportSystem> findReportSystemsByUserId(String userId, Pageable pageable);

@@ -38,7 +38,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
 
     @Query(value = """
     SELECT v FROM Vacancy v
-    JOIN FETCH v.category cat
+    JOIN v.category cat
     WHERE v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
     AND (:textSearch = ""
         OR LOWER(v.title) LIKE CONCAT('%', LOWER(:textSearch), '%')
@@ -86,7 +86,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
 
     @Query("""
     SELECT v FROM Vacancy v
-    JOIN FETCH v.category
+    JOIN v.category
     WHERE v.companyId = :companyId
     AND v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
     """)

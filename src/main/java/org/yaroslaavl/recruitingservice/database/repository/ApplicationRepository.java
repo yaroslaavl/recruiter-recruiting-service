@@ -28,7 +28,7 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
 
     @Query("""
     SELECT app FROM Application app
-    JOIN FETCH app.vacancy v
+    JOIN app.vacancy v
     WHERE app.candidateId = :candidateId
     ORDER BY app.appliedAt DESC
     """)
