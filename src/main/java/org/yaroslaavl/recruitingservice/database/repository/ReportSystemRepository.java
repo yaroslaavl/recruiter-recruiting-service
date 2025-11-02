@@ -34,18 +34,27 @@ public interface ReportSystemRepository extends JpaRepository<ReportSystem, UUID
 
     Optional<ReportSystem> findReportSystemsByUserIdAndVacancy_Id(String userId, UUID vacancyId);
 
-    @Query("""
+    @Query(value = """
     SELECT rs FROM ReportSystem rs
     WHERE rs.vacancy.id = :vacancyId
     AND (:status IS NULL OR rs.status = :status)
-    ORDER BY rs.createdAt
+    ORDER BY rs.createdAt DESC
+    """, countQuery = """
+    SELECT COUNT(rs) FROM ReportSystem rs
+    WHERE rs.vacancy.id = :vacancyId
+    AND (:status IS NULL OR rs.status = :status)
     """)
     Page<ReportSystem> findReportSystemsByFilteredStatus(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
 
     Optional<ReportSystem> findReportSystemsByUserIdAndId(String userId, UUID id);
 
-    @Query("""
+    @Query(value = """
     SELECT rs FROM ReportSystem rs
+    JOIN FETCH rs.vacancy v
+    WHERE (:userId IS NULL OR rs.userId = :userId)
+    ORDER BY rs.createdAt DESC
+    """, countQuery = """
+    SELECT COUNT(rs) FROM ReportSystem rs
     JOIN rs.vacancy v
     WHERE (:userId IS NULL OR rs.userId = :userId)
     """)
