@@ -8,7 +8,7 @@ import org.yaroslaavl.recruitingservice.dto.response.VacancyResponseDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.VacancyShortDto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -23,7 +23,7 @@ public interface VacancyService {
 
     VacancyResponseDto getVacancy(UUID vacancyId);
 
-    PageShortDto<VacancyShortDto> getFilteredVacancies(String textSearch, ContractType contractType, WorkMode workMode, PositionLevel positionLevel, Workload workload, Integer salaryFrom, Integer salaryTo, LocalDateTime uploadAt, Pageable pageable);
+    PageShortDto<VacancyShortDto> getFilteredVacancies(String textSearch, ContractType contractType, WorkMode workMode, PositionLevel positionLevel, Workload workload, Integer salaryFrom, Integer salaryTo, LocalDate uploadAt, Pageable pageable);
 
     PageShortDto<VacancyShortDto> getCompanyVacancies(UUID companyId, Pageable pageable);
 

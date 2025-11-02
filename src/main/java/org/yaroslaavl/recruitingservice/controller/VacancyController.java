@@ -17,6 +17,7 @@ import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.dto.response.list.VacancyShortDto;
 import org.yaroslaavl.recruitingservice.service.VacancyService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class VacancyController {
     }
 
     @GetMapping("/{id}/info")
-    @PreAuthorize("hasAnyRole('VERIFIED_RECRUITER', 'VERIFIED_CANDIDATE')")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<VacancyResponseDto> getVacancy(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(vacancyService.getVacancy(id));
     }
@@ -68,7 +69,7 @@ public class VacancyController {
             @RequestParam(required = false) Workload workload,
             @RequestParam(required = false) Integer salaryFrom,
             @RequestParam(required = false) Integer salaryTo,
-            @RequestParam(required = false) LocalDateTime uploadAt,
+            @RequestParam(required = false) LocalDate uploadAt,
             @PageableDefault(size = 15) Pageable pageable
     ) {
         return ResponseEntity.ok(

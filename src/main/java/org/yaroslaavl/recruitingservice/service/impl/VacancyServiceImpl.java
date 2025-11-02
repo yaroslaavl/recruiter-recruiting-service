@@ -124,7 +124,7 @@ public class VacancyServiceImpl implements VacancyService {
 
     @Override
     public VacancyResponseDto getVacancy(UUID vacancyId) {
-        Vacancy vacancy = vacancyRepository.findById(vacancyId).orElseThrow(
+        Vacancy vacancy = vacancyRepository.getVacancyById(vacancyId).orElseThrow(
                 () -> new EntityNotFoundException("Vacancy with id: " + vacancyId + " not found"));
 
         return vacancyMapper.toDto(vacancy);
@@ -145,19 +145,16 @@ public class VacancyServiceImpl implements VacancyService {
      * @return a paginated DTO containing a list of filtered vacancies, each represented by a VacancyShortDto
      */
     @Override
-    public PageShortDto<VacancyShortDto> getFilteredVacancies(String textSearch, ContractType contractType, WorkMode workMode, PositionLevel positionLevel, Workload workload, Integer salaryFrom, Integer salaryTo, LocalDateTime uploadAt, Pageable pageable) {
+    public PageShortDto<VacancyShortDto> getFilteredVacancies(String textSearch, ContractType contractType, WorkMode workMode, PositionLevel positionLevel, Workload workload, Integer salaryFrom, Integer salaryTo, LocalDate uploadAt, Pageable pageable) {
         log.info("Getting vacancies by filtered textSearch: {}, contractType: {}, workMode: {}, position: {}, workload: {}",
                 textSearch, contractType, workMode, positionLevel, workload);
 
-        LocalDateTime selectedDateStart;
-        LocalDateTime selectedDateEnd;
+        LocalDateTime selectedDateStart = LocalDateTime.of(2025, 1, 1, 0, 0);
+        LocalDateTime selectedDateEnd = LocalDateTime.now();
 
         if (uploadAt != null) {
-            selectedDateStart = uploadAt.toLocalDate().atStartOfDay();
-            selectedDateEnd = selectedDateStart.toLocalDate().atTime(LocalTime.MAX);
-        } else {
-            selectedDateStart = LocalDate.of(2025, 1, 1).atStartOfDay();
-            selectedDateEnd = LocalDateTime.now();
+            selectedDateStart = uploadAt.atStartOfDay();
+            selectedDateEnd = uploadAt.atTime(LocalTime.MAX);
         }
 
         Page<Vacancy> filteredVacancies = vacancyRepository.getFilteredVacancies(textSearch, contractType, workMode, positionLevel, workload, salaryFrom, salaryTo, selectedDateStart, selectedDateEnd, pageable);

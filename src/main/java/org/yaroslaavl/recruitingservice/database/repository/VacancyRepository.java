@@ -1,5 +1,6 @@
 package org.yaroslaavl.recruitingservice.database.repository;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,7 @@ import org.yaroslaavl.recruitingservice.database.entity.enums.Workload;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -38,7 +40,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
 
     @Query(value = """
     SELECT v FROM Vacancy v
-    JOIN v.category cat
+    JOIN FETCH v.category cat
     WHERE v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
     AND (:textSearch = ""
         OR LOWER(v.title) LIKE CONCAT('%', LOWER(:textSearch), '%')
@@ -51,8 +53,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
     AND (:workload IS NULL OR v.workload = :workload)
     AND (:salaryFrom IS NULL OR v.salaryFrom >= :salaryFrom)
     AND (:salaryTo IS NULL OR v.salaryTo <= :salaryTo)
-    AND v.createdAt >= :selectedDateStart
-    AND v.createdAt <= :selectedDateEnd
+    AND (v.createdAt BETWEEN :selectedDateStart AND :selectedDateEnd)
     ORDER BY v.createdAt DESC, cat.name ASC
     """,
     countQuery = """
@@ -70,8 +71,7 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
     AND (:workload IS NULL OR v.workload = :workload)
     AND (:salaryFrom IS NULL OR v.salaryFrom >= :salaryFrom)
     AND (:salaryTo IS NULL OR v.salaryTo <= :salaryTo)
-    AND v.createdAt >= :selectedDateStart
-    AND v.createdAt <= :selectedDateEnd
+    AND (v.createdAt BETWEEN :selectedDateStart AND :selectedDateEnd)
     """)
     Page<Vacancy> getFilteredVacancies(String textSearch,
                                       ContractType contractType,
@@ -80,8 +80,8 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
                                       Workload workload,
                                       Integer salaryFrom,
                                       Integer salaryTo,
-                                      LocalDateTime selectedDateStart,
-                                      LocalDateTime selectedDateEnd,
+                                      @NotNull LocalDateTime selectedDateStart,
+                                      @NotNull LocalDateTime selectedDateEnd,
                                       Pageable pageable);
 
     @Query("""
@@ -98,4 +98,11 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
     AND v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
     """)
     List<Vacancy> getCompaniesVacancy(Set<UUID> companyIds);
+
+    @Query("""
+    SELECT v FROM Vacancy v
+    JOIN FETCH v.category
+    WHERE v.id = :id
+    """)
+    Optional<Vacancy> getVacancyById(UUID id);
 }
