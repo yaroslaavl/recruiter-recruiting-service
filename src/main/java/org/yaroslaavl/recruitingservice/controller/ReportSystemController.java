@@ -39,7 +39,7 @@ public class ReportSystemController {
     }
 
     @GetMapping("/search")
-    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<PageShortDto<ReportSystemShortDto>> getFilteredReports(@RequestParam("vacancyId") UUID vacancyId,
                                                                                  @RequestParam(required = false, value = "status") RecruitingSystemStatus status,
                                                                                  @PageableDefault(size = 15) Pageable pageable) {

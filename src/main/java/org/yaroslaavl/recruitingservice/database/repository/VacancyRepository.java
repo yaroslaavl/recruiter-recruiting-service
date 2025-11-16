@@ -84,9 +84,15 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
                                       @NotNull LocalDateTime selectedDateEnd,
                                       Pageable pageable);
 
-    @Query("""
+    @Query(value = """
     SELECT v FROM Vacancy v
-    JOIN v.category
+    JOIN FETCH v.category cat
+    WHERE v.companyId = :companyId
+    AND v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
+    ORDER BY v.createdAt DESC, cat.name ASC
+    """, countQuery = """
+    SELECT COUNT(v) FROM Vacancy v
+    JOIN v.category cat
     WHERE v.companyId = :companyId
     AND v.status = org.yaroslaavl.recruitingservice.database.entity.enums.VacancyStatus.ENABLED
     """)
