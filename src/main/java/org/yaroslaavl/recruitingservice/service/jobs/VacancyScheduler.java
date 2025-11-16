@@ -128,7 +128,7 @@ public class VacancyScheduler {
                 log.info("Vacancy with id '{}' is now disabled", vacancy.getId());
             }
 
-           /* if (vacancy.getLastStatusChangeAt().plusMinutes(vacancyTimeExpiration.toMinutes()).isBefore(LocalDateTime.now())) {
+            if (vacancy.getLastStatusChangeAt().plusMinutes(vacancyTimeExpiration.toMinutes()).isBefore(LocalDateTime.now())) {
                 vacancy.setStatus(VacancyStatus.TIME_EXPIRED);
                 vacancy.setWaitingForApproval(Boolean.TRUE);
 
@@ -137,7 +137,7 @@ public class VacancyScheduler {
                 isChanged = Boolean.TRUE;
                 isExpired = Boolean.TRUE;
                 log.info("Vacancy with id '{}' expired", vacancy.getId());
-            }*/
+            }
 
             if (isChanged && isExpired) {
                 publisher.publishInAppNotification(NotificationStore.inAppNotification(null, vacancy.getRecruiterId(), String.valueOf(vacancy.getId()), "VACANCY_EXPIRED", Map.of("vacancyTitle", vacancy.getTitle(), "expiredAt", LocalDateTime.now().toString())));
