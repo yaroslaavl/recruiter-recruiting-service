@@ -26,11 +26,15 @@ public interface ApplicationRepository extends JpaRepository<Application, UUID> 
     """)
     Page<Application> findApplicationsByVacancyIdAndStatus(UUID vacancyId, RecruitingSystemStatus status, List<String> userFilteredIds, Pageable pageable);
 
-    @Query("""
+    @Query(value = """
     SELECT app FROM Application app
-    JOIN app.vacancy v
+    JOIN FETCH app.vacancy v
     WHERE app.candidateId = :candidateId
     ORDER BY app.appliedAt DESC
+    """, countQuery = """
+    SELECT COUNT(app) FROM Application app
+    JOIN app.vacancy v
+    WHERE app.candidateId = :candidateId
     """)
     Page<Application> findApplicationsByCandidateId(String candidateId, Pageable pageable);
 
