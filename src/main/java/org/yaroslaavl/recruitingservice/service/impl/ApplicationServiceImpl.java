@@ -26,6 +26,7 @@ import org.yaroslaavl.recruitingservice.dto.response.list.PageShortDto;
 import org.yaroslaavl.recruitingservice.exception.*;
 import org.yaroslaavl.recruitingservice.feignClient.cv.CvFeignClient;
 import org.yaroslaavl.recruitingservice.feignClient.dto.ApplicationChatInfo;
+import org.yaroslaavl.recruitingservice.feignClient.dto.CVApplicationDto;
 import org.yaroslaavl.recruitingservice.feignClient.dto.CompanyPreviewFeignDto;
 import org.yaroslaavl.recruitingservice.feignClient.user.UserFeignClient;
 import org.yaroslaavl.recruitingservice.feignClient.dto.UserFeignDto;
@@ -86,9 +87,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CandidateAccountStatusException("User is not approved");
         }
 
-        String cvForRecruiter = cvFeignClient.getCvForRecruiter(vacancyApplicationRequestDto.cvId());
+        CVApplicationDto cvForRecruiter = cvFeignClient.getCvForRecruiter(vacancyApplicationRequestDto.cvId());
 
-        if (cvForRecruiter == null || cvForRecruiter.isEmpty()) {
+        if (cvForRecruiter == null) {
             throw new GetCvException("Cv is not found or not readable");
         }
 

@@ -111,4 +111,6 @@ public interface VacancyRepository extends JpaRepository<Vacancy, UUID> {
     WHERE v.id = :id
     """)
     Optional<Vacancy> getVacancyById(UUID id);
+
+    boolean findVacancyByIdAndRecruiterId(UUID id, String recruiterId);
 }

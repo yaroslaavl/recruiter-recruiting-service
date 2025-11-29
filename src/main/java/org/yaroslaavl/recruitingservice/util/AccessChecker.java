@@ -10,6 +10,7 @@ import org.yaroslaavl.recruitingservice.database.entity.Application;
 import org.yaroslaavl.recruitingservice.database.entity.enums.Credentials;
 import org.yaroslaavl.recruitingservice.database.repository.ApplicationRepository;
 import org.yaroslaavl.recruitingservice.database.repository.ReportSystemRepository;
+import org.yaroslaavl.recruitingservice.database.repository.VacancyRepository;
 import org.yaroslaavl.recruitingservice.service.SecurityContextService;
 
 import java.util.UUID;
@@ -22,6 +23,14 @@ public class AccessChecker {
     private final SecurityContextService securityContextService;
     private final ReportSystemRepository reportSystemRepository;
     private final ApplicationRepository applicationRepository;
+    private final VacancyRepository vacancyRepository;
+
+    public boolean hasAccessToActOnVacancy(UUID id) {
+        String userId = securityContextService.getSecurityContext(Credentials.SUB);
+
+        return userId != null && !userId.isEmpty()
+                && vacancyRepository.findVacancyByIdAndRecruiterId(id, userId);
+    }
 
     public boolean hasAccessToReport(UUID id) {
         String userId = securityContextService.getSecurityContext(Credentials.SUB);

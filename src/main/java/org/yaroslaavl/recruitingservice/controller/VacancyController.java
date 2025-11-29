@@ -44,7 +44,7 @@ public class VacancyController {
     }
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER') and @accessChecker.hasAccessToActOnVacancy(#id)")
     public ResponseEntity<Void> update(@PathVariable("id") UUID id,
                                        @RequestBody VacancyUpdateRequestDto vacancyUpdateRequestDto) {
         vacancyService.update(id, vacancyUpdateRequestDto);
@@ -52,7 +52,7 @@ public class VacancyController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER') and @accessChecker.hasAccessToActOnVacancy(#id)")
     public ResponseEntity<Void> delete(@PathVariable("id") UUID id,
                                        @RequestParam("companyId") UUID companyId) {
         vacancyService.delete(id, companyId);

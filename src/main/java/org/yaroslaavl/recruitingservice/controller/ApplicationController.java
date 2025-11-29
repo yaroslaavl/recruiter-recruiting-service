@@ -34,7 +34,7 @@ public class ApplicationController {
     }
 
     @GetMapping("/search/{vacancyId}")
-    @PreAuthorize("hasRole('VERIFIED_RECRUITER')")
+    @PreAuthorize("hasRole('VERIFIED_RECRUITER') and @accessChecker.hasAccessToActOnVacancy(#vacancyId)")
     public ResponseEntity<PageShortDto<ApplicationShortDto>> getApplications(
             @PathVariable("vacancyId") UUID vacancyId,
             @RequestParam(required = false, name = "status") RecruitingSystemStatus status,
