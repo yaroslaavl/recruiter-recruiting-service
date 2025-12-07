@@ -33,6 +33,9 @@ public interface ReportSystemMapper {
     List<UserReportsShortDto> toUserShortDto(List<ReportSystem> reportSystemList);
 
     @Mapping(target = "reportedAt", source = "createdAt")
+    @Mapping(target = "vacancyId", source = "vacancy.id")
+    @Mapping(target = "vacancyTitle", source = "vacancy.title")
+    @Mapping(target = "vacancyDescription", source = "vacancy.description")
     ReportSystemResponseDto toResponseDto(ReportSystem reportSystem);
 
     default String mapUserEmail(ReportSystem reportSystem, Map<String, String> usersDisplayName) {
