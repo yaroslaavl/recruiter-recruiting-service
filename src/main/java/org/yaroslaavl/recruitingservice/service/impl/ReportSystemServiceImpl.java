@@ -133,20 +133,18 @@ public class ReportSystemServiceImpl implements ReportSystemService {
     }
 
     /**
-     * Retrieves a paginated list of filtered report summaries for a given vacancy based on its status.
+     * Retrieves a paginated list of filtered report summaries for a given status.
      *
-     * @param vacancyId the unique identifier of the vacancy for which reports should be retrieved
      * @param status the filtering status used to retrieve reports (e.g., NEW, RESOLVED, etc.)
      * @param pageable an object specifying pagination and sorting information
      * @return a paginated list of {@link ReportSystemShortDto} representing the filtered reports
      */
     @Override
-    public PageShortDto<ReportSystemShortDto> getFilteredReports(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable) {
-        log.info("Getting filtered reports for vacancy with id {} and status {}", vacancyId, status);
-        Vacancy vacancy = getVacancy(vacancyId);
+    public PageShortDto<ReportSystemShortDto> getFilteredReports(RecruitingSystemStatus status, Pageable pageable) {
+        log.info("Getting filtered reports with status {}", status);
 
         Page<ReportSystem> reportSystemsByFilteredStatus
-                = reportSystemRepository.findReportSystemsByFilteredStatus(vacancy.getId(), status, pageable);
+                = reportSystemRepository.findReportSystemsByFilteredStatus(status, pageable);
 
         Set<String> userIds = reportSystemsByFilteredStatus.stream().map(ReportSystem::getUserId).collect(Collectors.toSet());
 
@@ -167,7 +165,7 @@ public class ReportSystemServiceImpl implements ReportSystemService {
 
     @Override
     public ReportSystemResponseDto getReport(UUID id) {
-        ReportSystem reportSystem = reportSystemRepository.findById(id)
+        ReportSystem reportSystem = reportSystemRepository.findByIdWithVacancy(id)
                 .orElseThrow(() -> new EntityNotFoundException("Report not found with id: " + id));
 
         return reportSystemMapper.toResponseDto(reportSystem);

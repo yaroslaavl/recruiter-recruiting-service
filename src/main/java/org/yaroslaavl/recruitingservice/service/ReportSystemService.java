@@ -16,7 +16,7 @@ public interface ReportSystemService {
 
     void resolveReport(UUID reportId, RecruitingSystemStatus newStatus);
 
-    PageShortDto<ReportSystemShortDto> getFilteredReports(UUID vacancyId, RecruitingSystemStatus status, Pageable pageable);
+    PageShortDto<ReportSystemShortDto> getFilteredReports(RecruitingSystemStatus status, Pageable pageable);
 
     ReportSystemResponseDto getReport(UUID id);
 
