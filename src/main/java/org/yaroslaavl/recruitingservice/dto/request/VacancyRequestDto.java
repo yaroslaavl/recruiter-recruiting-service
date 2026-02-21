@@ -22,6 +22,6 @@ public record VacancyRequestDto(
         @NotNull PositionLevel positionLevel,
         @NotNull Workload workload,
         String location,
-        Integer salaryFrom,
-        Integer salaryTo
+        @NotNull Integer salaryFrom,
+        @NotNull Integer salaryTo
 ) { }

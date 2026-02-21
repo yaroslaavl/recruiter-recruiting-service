@@ -68,10 +68,10 @@ public class Vacancy {
     @Column(name = "location")
     private String location;
 
-    @Column(name = "salary_from")
+    @Column(name = "salary_from", nullable = false)
     private Integer salaryFrom;
 
-    @Column(name = "salary_to")
+    @Column(name = "salary_to", nullable = false)
     private Integer salaryTo;
 
     @Enumerated(EnumType.STRING)

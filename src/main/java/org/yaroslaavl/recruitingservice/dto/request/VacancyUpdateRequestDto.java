@@ -1,6 +1,8 @@
 package org.yaroslaavl.recruitingservice.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.yaroslaavl.recruitingservice.database.entity.enums.ContractType;
 import org.yaroslaavl.recruitingservice.database.entity.enums.PositionLevel;
 import org.yaroslaavl.recruitingservice.database.entity.enums.WorkMode;
@@ -10,14 +12,14 @@ import java.util.UUID;
 
 public record VacancyUpdateRequestDto(
         @NotNull UUID companyId,
-        String description,
-        String requirementsMustHave,
-        String requirementsNiceToHave,
+        @NotBlank @Size(max = 300) String description,
+        @Size(max = 300) String requirementsMustHave,
+        @Size(max = 300) String requirementsNiceToHave,
         ContractType contractType,
         WorkMode workMode,
         PositionLevel positionLevel,
         Workload workload,
         String location,
-        Integer salaryFrom,
-        Integer salaryTo
+        @NotNull Integer salaryFrom,
+        @NotNull Integer salaryTo
 ) { }
