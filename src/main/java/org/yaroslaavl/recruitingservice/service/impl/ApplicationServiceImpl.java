@@ -266,7 +266,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         application.setStatus(newStatus);
         applicationHistoryChanger(application, newStatus, false);
 
-        if (newStatus == RecruitingSystemStatus.ACCEPTED) {
+        boolean isApproved = newStatus == RecruitingSystemStatus.ACCEPTED;
+        if (isApproved) {
             application.getVacancy().setStatus(VacancyStatus.ARCHIVED);
             vacancyRepository.save(application.getVacancy());
             publisher.publishInAppNotification(NotificationStore.inAppNotification(null, application.getCandidateId(), String.valueOf(application.getId()), "APPLICATION_APPROVED",
@@ -274,12 +275,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                             "approvedAt", LocalDateTime.now().toString())));
         }
 
-        publisher.publishInAppNotification(NotificationStore.inAppNotification(null, application.getCandidateId(), String.valueOf(application.getId()), "APPLICATION_STATUS_CHANGED",
-                Map.of("vacancyTitle", application.getVacancy().getTitle(),
-                        "oldStatus", application.getStatus().toString(),
-                        "newStatus", newStatus.toString(),
-                        "changedAt", LocalDateTime.now().toString())));
-
+        if (!isApproved) {
+            publisher.publishInAppNotification(NotificationStore.inAppNotification(null, application.getCandidateId(), String.valueOf(application.getId()), "APPLICATION_STATUS_CHANGED",
+                    Map.of("vacancyTitle", application.getVacancy().getTitle(),
+                            "oldStatus", application.getStatus().toString(),
+                            "newStatus", newStatus.toString(),
+                            "changedAt", LocalDateTime.now().toString())));
+        }
         applicationRepository.save(application);
     }
 
