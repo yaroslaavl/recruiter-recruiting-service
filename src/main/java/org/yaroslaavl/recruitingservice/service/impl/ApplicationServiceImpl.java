@@ -96,6 +96,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         Vacancy vacancy = vacancyRepository.findById(vacancyApplicationRequestDto.vacancyId()).orElseThrow(
                 () -> new EntityNotFoundException("Vacancy with id: " + vacancyApplicationRequestDto.vacancyId() + " not found"));
 
+        if (vacancy.getStatus() == VacancyStatus.ARCHIVED) {
+            throw new RuntimeException("Vacancy is archived");
+        }
+
         Optional<Application> optionalApplication = applicationRepository.findByVacancyIdAndCandidateId(
                 vacancyApplicationRequestDto.vacancyId(),
                 candidateKeyId);
